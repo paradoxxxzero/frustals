@@ -1,0 +1,40 @@
+{
+  "name": "frustals-front",
+  "version": "0.1.0",
+  "description": "Fractal generation with wasm and rust",
+  "main": "index.js",
+  "scripts": {
+    "build": "NODE_ENV=production webpack --config webpack.config.js",
+    "start": "NODE_ENV=development webpack-dev-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paradoxxxzero/frustals.git"
+  },
+  "keywords": [
+    "fractals",
+    "wasm",
+    "rust",
+    "webpack"
+  ],
+  "author": "Florian Mounier <paradoxxx.zero@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/paradoxxxzero/frustals/issues"
+  },
+  "homepage": "https://github.com/paradoxxxzero/frustals#readme",
+  "dependencies": {
+    "frustals": "file:../pkg"
+  },
+  "devDependencies": {
+    "dart-sass": "^1.22.12",
+    "css-loader": "^3.2.0",
+    "file-loader": "^4.2.0",
+    "html-webpack-plugin": "^3.2.0",
+    "sass-loader": "^8.0.0",
+    "style-loader": "^1.0.0",
+    "webpack": "^4.29.3",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
+  }
+}
