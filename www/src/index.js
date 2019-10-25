@@ -39,7 +39,7 @@ window.addEventListener("resize", resize, false);
 window.addEventListener(
   "keydown",
   ({ keyCode }) => {
-    // console.log(keyCode);
+    console.log(keyCode);
     switch (keyCode) {
       case 78:
         frustal.set_type(FractalType.Newton);

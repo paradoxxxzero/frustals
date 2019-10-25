@@ -1,7 +1,10 @@
+mod domain;
 mod fractals;
 mod pixel;
+
+use crate::domain::{Domain, Point};
 use crate::fractals::{Fractal, Mandelbrot, Newton, Options};
-use crate::pixel::{Pixel, Point};
+use crate::pixel::Pixel;
 use wasm_bindgen::prelude::*;
 
 #[cfg(feature = "wee_alloc")]
@@ -14,9 +17,49 @@ pub fn set_panic_hook() {
 }
 
 #[wasm_bindgen]
-pub enum FractalType {
+pub enum Preset {
     Mandelbrot,
+    Mandelbrot3,
+    Mandelbrot4,
+    Mandelbrot5,
     Newton,
+}
+
+fn get_from_preset(preset: Preset) -> Box<dyn Fractal> {
+    match preset {
+        Preset::Mandelbrot => Box::new(Mandelbrot::new(
+            Options {
+                precision: 25.,
+                smooth: true,
+            },
+            2,
+        )),
+        Preset::Mandelbrot3 => Box::new(Mandelbrot::new(
+            Options {
+                precision: 25.,
+                smooth: true,
+            },
+            3,
+        )),
+        Preset::Mandelbrot4 => Box::new(Mandelbrot::new(
+            Options {
+                precision: 25.,
+                smooth: true,
+            },
+            4,
+        )),
+        Preset::Mandelbrot5 => Box::new(Mandelbrot::new(
+            Options {
+                precision: 25.,
+                smooth: true,
+            },
+            5,
+        )),
+        Preset::Newton => Box::new(Newton::new(Options {
+            precision: 20.,
+            smooth: true,
+        })),
+    }
 }
 
 #[wasm_bindgen]
@@ -24,6 +67,7 @@ pub struct Frustal {
     width: usize,
     height: usize,
     data: Vec<Pixel>,
+    domain: Domain,
     fractal: Box<dyn Fractal>,
 }
 
@@ -34,49 +78,34 @@ impl Frustal {
             width,
             height,
             data: (0..width * height).map(|_| Pixel::void()).collect(),
-            fractal: Box::new(Newton::new(Options {
-                precision: 20.,
-                smooth: true,
-            })),
+            domain: Domain {
+                min: Point { x: -2., y: -1.5 },
+                max: Point { x: 2., y: 1.5 },
+                width,
+                height,
+            },
+            fractal: get_from_preset(Preset::Mandelbrot),
         }
     }
 
-    pub fn set_type(&mut self, fractal_type: FractalType) {
-        let smooth = true;
-        self.fractal = match fractal_type {
-            FractalType::Mandelbrot => Box::new(Mandelbrot::new(Options {
-                precision: 25.,
-                smooth,
-            })),
-            FractalType::Newton => Box::new(Newton::new(Options {
-                precision: 20.,
-                smooth,
-            })),
-        }
+    pub fn set_from_preset(&mut self, preset: Preset) {
+        self.fractal = get_from_preset(preset);
     }
 
     pub fn resize(&mut self, width: usize, height: usize) {
         self.width = width;
         self.height = height;
+        self.domain.width = width;
+        self.domain.height = height;
         self.data = (0..width * height).map(|_| Pixel::void()).collect()
     }
 
     pub fn render(&mut self) -> *const Pixel {
         set_panic_hook();
-        let x_min = -2.0;
-        let x_max = 2.0;
-        let y_min = -1.5;
-        let y_max = 1.5;
-        for x in 0..self.width {
-            for y in 0..self.height {
-                let i = x + (self.height - y - 1) * self.width;
-                let point = Point {
-                    x: x_min + (x as f64) * (x_max - x_min) / (self.width as f64),
-                    y: y_min + (y as f64) * (y_max - y_min) / (self.height as f64),
-                };
-                let pixel = self.fractal.get_pixel_at_point(point);
-                self.data[i].from(pixel);
-            }
+
+        for (i, point) in self.domain.iter().enumerate() {
+            let pixel = self.fractal.get_pixel_at_point(point);
+            self.data[i].from(pixel);
         }
 
         self.data.as_ptr()

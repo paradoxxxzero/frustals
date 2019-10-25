@@ -1,4 +1,6 @@
-use crate::pixel::{Pixel, Point};
+use crate::domain::Point;
+use crate::pixel::Pixel;
+use num_complex::Complex;
 
 enum Channel {
     Red,
@@ -29,10 +31,6 @@ pub struct Options {
 }
 
 pub trait Fractal {
-    fn new(options: Options) -> Self
-    where
-        Self: Sized;
-
     fn options(&self) -> &Options;
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe;
@@ -60,43 +58,46 @@ pub trait Fractal {
 
 pub struct Mandelbrot {
     options: Options,
+    order: i32,
+}
+
+impl Mandelbrot {
+    pub fn new(options: Options, order: i32) -> Mandelbrot {
+        Mandelbrot { options, order }
+    }
 }
 
 impl Fractal for Mandelbrot {
-    fn new(options: Options) -> Mandelbrot {
-        Mandelbrot { options }
-    }
-
     fn options(&self) -> &Options {
         &self.options
     }
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
-        let mut a = 0_f64;
-        let mut b = 0_f64;
+        let mut z = Complex::new(0_f64, 0_f64);
+        let c = Complex::new(point.x, point.y);
 
         let mut n = 0_f64;
         while n < self.options.precision {
-            let a2 = a * a;
-            let b2 = b * b;
             // |z| = sqrt(a^2 + b^2)
             // |z|^2 = a^2 + b^2 =
-            let mod2 = a2 + b2;
+            let mod2 = z.norm_sqr();
             // |z| > 2 => |z|^2 > 4
             if mod2 > 4. {
                 if self.options.smooth {
-                    n += 1. - (mod2.log2() / 2.).log2()
+                    // Smoothing is:
+                    // ln( ln |zn| / ln B ) / ln d
+                    // where B is max(|c|;2^(1/d-1)) and d is the order
+                    n -= ((mod2.ln() / 2.)
+                        / c.norm().max((2.0f64).powf(1. / (self.order as f64 - 1.))))
+                    .ln()
+                        / (self.order as f64).ln();
                 }
                 return Some(Iterations::all(n));
             }
 
-            // zn+1 = zn^2 + c
-            // an+1 + ibn+1 = an^2 - bn^2 + i2anbn + x + iy
-            // an+1 = an^2 - bn^2 + x
-            // bn+1 = 2anbn + y
+            // zn+1 = zn^d + c
+            z = z.powi(self.order) + c;
             n += 1.;
-            b = 2. * a * b + point.y;
-            a = a2 - b2 + point.x;
         }
         None
     }
@@ -106,11 +107,13 @@ pub struct Newton {
     options: Options,
 }
 
-impl Fractal for Newton {
-    fn new(options: Options) -> Newton {
+impl Newton {
+    pub fn new(options: Options) -> Newton {
         Newton { options }
     }
+}
 
+impl Fractal for Newton {
     fn options(&self) -> &Options {
         &self.options
     }

@@ -1,12 +1,6 @@
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
-pub struct Point {
-    pub x: f64,
-    pub y: f64,
-}
-
-#[wasm_bindgen]
 pub struct Pixel {
     pub r: u8,
     pub g: u8,
