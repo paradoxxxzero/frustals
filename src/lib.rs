@@ -35,6 +35,7 @@ impl Frustal {
             order: 2,
             julia_real: -0.8,
             julia_imaginary: 0.156,
+            lightness: 1.0,
         };
         Frustal {
             width,

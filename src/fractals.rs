@@ -59,6 +59,7 @@ pub struct Options {
     pub order: i32,
     pub julia_real: f64,
     pub julia_imaginary: f64,
+    pub lightness: f64,
 }
 
 #[wasm_bindgen]
@@ -75,10 +76,11 @@ pub trait Fractal {
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe;
 
     fn get_pixel_for_iteration(&self, iterations: IterationsMaybe) -> Pixel {
+        let options = self.options();
         if let Some(Iterations { n, channel }) = iterations {
             if let Channel::All = channel {
                 // Expanding normalized iterations on the rgb spectrum:
-                let order = 3. * 255. * n / (self.options().precision as f64);
+                let order = 3. * 255. * n / (options.precision as f64) * options.lightness;
                 Pixel::from_f64(order, order - 255., order - 2. * 255.)
             } else {
                 panic!(
@@ -123,10 +125,10 @@ impl Fractal for Mandelbrot {
             // zn+1 = zn^d + c
             z = z.powi(self.options.order) + c;
 
-            // |z| = sqrt(a^2 + b^2)
-            // |z|^2 = a^2 + b^2 =
+            // |z| = sqrt(a² + b²)
+            // |z|² = a² + b² =
             let mod2 = z.norm_sqr();
-            // |z| > 2 => |z|^2 > 4
+            // |z| > 2 => |z|² > 4
             if mod2 > 4. {
                 let mut n = iterations as f64;
                 if self.options.smooth {
@@ -202,7 +204,7 @@ impl Fractal for Newton {
     fn get_pixel_for_iteration(&self, iterations: IterationsMaybe) -> Pixel {
         if let Some(iterations) = iterations {
             // Expanding normalized iterations on the rgb spectrum:
-            let sn = 255. - iterations.n * (self.options.precision as f64);
+            let sn = 255. - iterations.n * (self.options.precision as f64) / self.options.lightness;
             match iterations.channel {
                 Channel::Red => Pixel::from_f64(sn, 0., 0.),
                 Channel::Green => Pixel::from_f64(0., sn, 0.),
@@ -241,7 +243,7 @@ impl Fractal for Julia {
         let mut iterations = 0;
 
         while iterations < self.options.precision {
-            // zn+1 = zn^2 + c
+            // zn+1 = zn² + c
             z = z.powi(self.options.order) + c;
             let mod2 = z.norm_sqr();
             if mod2 > 4. {
@@ -286,10 +288,10 @@ impl Fractal for Mandelbar {
             // zn+1 = conj(zn)^d + c
             z = z.conj().powi(self.options.order) + c;
 
-            // |z| = sqrt(a^2 + b^2)
-            // |z|^2 = a^2 + b^2 =
+            // |z| = sqrt(a² + b²)
+            // |z|² = a² + b² =
             let mod2 = z.norm_sqr();
-            // |z| > 2 => |z|^2 > 4
+            // |z| > 2 => |z|² > 4
             if mod2 > 4. {
                 let mut n = iterations as f64;
                 if self.options.smooth {
@@ -336,13 +338,14 @@ impl Fractal for BurningShip {
 
         let mut iterations = 0;
         while iterations < self.options.precision {
-            // zn+1 = conj(zn)^d + c
-            z = Complex::new(z.re.abs(), z.im.abs()).powi(self.options.order) + c;
+            // zn+1 = (abs(Re(zn)) + abs(Im(zn)))² + c
+            // We cheat by inverting z.im.abs() to make it upright
+            z = Complex::new(z.re.abs(), -z.im.abs()).powi(self.options.order) + c;
 
-            // |z| = sqrt(a^2 + b^2)
-            // |z|^2 = a^2 + b^2 =
+            // |z| = sqrt(a² + b²)
+            // |z|² = a² + b²
             let mod2 = z.norm_sqr();
-            // |z| > 2 => |z|^2 > 4
+            // |z| > 2 => |z|² > 4
             if mod2 > 4. {
                 let mut n = iterations as f64;
                 if self.options.smooth {

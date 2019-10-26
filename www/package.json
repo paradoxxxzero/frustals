@@ -25,6 +25,7 @@
   "homepage": "https://github.com/paradoxxxzero/frustals#readme",
   "dependencies": {
     "dat.gui": "^0.7.6",
+    "debounce": "^1.2.0",
     "frustals": "file:../pkg"
   },
   "devDependencies": {

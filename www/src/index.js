@@ -1,6 +1,8 @@
 import { GUI } from "dat.gui";
+import debounce from "debounce";
 import { Frustal, Variant } from "frustals";
 import { memory } from "frustals/frustals_bg";
+import presets from "./presets";
 import "./index.sass";
 
 const canvas = document.createElement("canvas");
@@ -40,7 +42,6 @@ window.addEventListener("resize", resize, false);
 window.addEventListener(
   "keydown",
   ({ keyCode }) => {
-    console.log(keyCode);
     switch (keyCode) {
       case 78:
         frustal.set_type(Variant.Newton);
@@ -58,17 +59,22 @@ resize();
 
 const options = frustal.current_options();
 
-const sync = () => {
+const sync = debounce(() => {
   frustal.sync_options(options);
   render();
-};
+}, 25);
 
-const gui = new GUI();
+const gui = new GUI({
+  load: presets,
+  preset: "Mandelbrot"
+});
 gui.add(options, "variant", Variant).onChange(sync);
 gui.add(options, "precision", 2).onChange(sync);
 gui.add(options, "smooth").onChange(sync);
 gui.add(options, "order", 1, 15).onChange(sync);
 gui.add(options, "julia_real", -1.0, 1.0).onChange(sync);
 gui.add(options, "julia_imaginary", -1.0, 1.0).onChange(sync);
+gui.add(options, "lightness", 0, 10.0).onChange(sync);
 
+gui.remember(options);
 window.frustal = frustal;
