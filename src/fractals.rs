@@ -10,6 +10,8 @@ pub enum Variant {
     Mandelbrot,
     Newton,
     Julia,
+    Mandelbar,
+    BurningShip,
 }
 
 impl Variant {
@@ -18,6 +20,8 @@ impl Variant {
             Variant::Mandelbrot => Box::new(Mandelbrot::new(options)),
             Variant::Newton => Box::new(Newton::new(options)),
             Variant::Julia => Box::new(Julia::new(options)),
+            Variant::Mandelbar => Box::new(Mandelbar::new(options)),
+            Variant::BurningShip => Box::new(BurningShip::new(options)),
         }
     }
 }
@@ -116,6 +120,9 @@ impl Fractal for Mandelbrot {
 
         let mut iterations = 0;
         while iterations < self.options.precision {
+            // zn+1 = zn^d + c
+            z = z.powi(self.options.order) + c;
+
             // |z| = sqrt(a^2 + b^2)
             // |z|^2 = a^2 + b^2 =
             let mod2 = z.norm_sqr();
@@ -135,8 +142,6 @@ impl Fractal for Mandelbrot {
                 return Some(Iterations::all(n));
             }
 
-            // zn+1 = zn^d + c
-            z = z.powi(self.options.order) + c;
             iterations += 1;
         }
         None
@@ -247,6 +252,112 @@ impl Fractal for Julia {
 
                 return Some(Iterations::all(n));
             }
+            iterations += 1;
+        }
+        None
+    }
+}
+
+pub struct Mandelbar {
+    options: Options,
+}
+
+impl Mandelbar {
+    pub fn new(options: Options) -> Mandelbar {
+        Mandelbar { options }
+    }
+}
+
+impl Fractal for Mandelbar {
+    fn options(&self) -> &Options {
+        &self.options
+    }
+
+    fn set_options(&mut self, options: Options) {
+        self.options = options
+    }
+
+    fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
+        let mut z = Complex::new(0_f64, 0_f64);
+        let c = Complex::new(point.x, point.y);
+
+        let mut iterations = 0;
+        while iterations < self.options.precision {
+            // zn+1 = conj(zn)^d + c
+            z = z.conj().powi(self.options.order) + c;
+
+            // |z| = sqrt(a^2 + b^2)
+            // |z|^2 = a^2 + b^2 =
+            let mod2 = z.norm_sqr();
+            // |z| > 2 => |z|^2 > 4
+            if mod2 > 4. {
+                let mut n = iterations as f64;
+                if self.options.smooth {
+                    // Smoothing is:
+                    // ln( ln |zn| / ln B ) / ln d
+                    // where B is max(|c|;2^(1/d-1)) and d is the order
+                    n -= ((mod2.ln() / 2.)
+                        / c.norm()
+                            .max((2.0f64).powf(1. / (self.options.order as f64 - 1.))))
+                    .ln()
+                        / (self.options.order as f64).ln();
+                }
+                return Some(Iterations::all(n));
+            }
+
+            iterations += 1;
+        }
+        None
+    }
+}
+
+pub struct BurningShip {
+    options: Options,
+}
+
+impl BurningShip {
+    pub fn new(options: Options) -> BurningShip {
+        BurningShip { options }
+    }
+}
+
+impl Fractal for BurningShip {
+    fn options(&self) -> &Options {
+        &self.options
+    }
+
+    fn set_options(&mut self, options: Options) {
+        self.options = options
+    }
+
+    fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
+        let mut z = Complex::new(0_f64, 0_f64);
+        let c = Complex::new(point.x, point.y);
+
+        let mut iterations = 0;
+        while iterations < self.options.precision {
+            // zn+1 = conj(zn)^d + c
+            z = Complex::new(z.re.abs(), z.im.abs()).powi(self.options.order) + c;
+
+            // |z| = sqrt(a^2 + b^2)
+            // |z|^2 = a^2 + b^2 =
+            let mod2 = z.norm_sqr();
+            // |z| > 2 => |z|^2 > 4
+            if mod2 > 4. {
+                let mut n = iterations as f64;
+                if self.options.smooth {
+                    // Smoothing is:
+                    // ln( ln |zn| / ln B ) / ln d
+                    // where B is max(|c|;2^(1/d-1)) and d is the order
+                    n -= ((mod2.ln() / 2.)
+                        / c.norm()
+                            .max((2.0f64).powf(1. / (self.options.order as f64 - 1.))))
+                    .ln()
+                        / (self.options.order as f64).ln();
+                }
+                return Some(Iterations::all(n));
+            }
+
             iterations += 1;
         }
         None
