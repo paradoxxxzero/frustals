@@ -65,8 +65,10 @@ const sync = () => {
 
 const gui = new GUI();
 gui.add(options, "variant", Variant).onChange(sync);
-gui.add(options, "precision", 2, 2000).onChange(sync);
+gui.add(options, "precision", 2).onChange(sync);
 gui.add(options, "smooth").onChange(sync);
 gui.add(options, "order", 1, 15).onChange(sync);
+gui.add(options, "julia_real", -1.0, 1.0).onChange(sync);
+gui.add(options, "julia_imaginary", -1.0, 1.0).onChange(sync);
 
 window.frustal = frustal;

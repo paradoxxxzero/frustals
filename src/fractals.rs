@@ -9,6 +9,7 @@ use num_complex::Complex;
 pub enum Variant {
     Mandelbrot,
     Newton,
+    Julia,
 }
 
 impl Variant {
@@ -16,10 +17,12 @@ impl Variant {
         match options.variant {
             Variant::Mandelbrot => Box::new(Mandelbrot::new(options)),
             Variant::Newton => Box::new(Newton::new(options)),
+            Variant::Julia => Box::new(Julia::new(options)),
         }
     }
 }
 
+#[derive(Clone, Copy, PartialEq)]
 enum Channel {
     Red,
     Green,
@@ -46,10 +49,12 @@ pub type IterationsMaybe = Option<Iterations>;
 #[wasm_bindgen]
 #[derive(Clone, Copy)]
 pub struct Options {
-    pub precision: f64,
+    pub precision: usize,
     pub smooth: bool,
-    pub order: i32,
     pub variant: Variant, // for gui purpose
+    pub order: i32,
+    pub julia_real: f64,
+    pub julia_imaginary: f64,
 }
 
 #[wasm_bindgen]
@@ -69,7 +74,7 @@ pub trait Fractal {
         if let Some(Iterations { n, channel }) = iterations {
             if let Channel::All = channel {
                 // Expanding normalized iterations on the rgb spectrum:
-                let order = 3. * 255. * n / self.options().precision;
+                let order = 3. * 255. * n / (self.options().precision as f64);
                 Pixel::from_f64(order, order - 255., order - 2. * 255.)
             } else {
                 panic!(
@@ -109,13 +114,14 @@ impl Fractal for Mandelbrot {
         let mut z = Complex::new(0_f64, 0_f64);
         let c = Complex::new(point.x, point.y);
 
-        let mut n = 0_f64;
-        while n < self.options.precision {
+        let mut iterations = 0;
+        while iterations < self.options.precision {
             // |z| = sqrt(a^2 + b^2)
             // |z|^2 = a^2 + b^2 =
             let mod2 = z.norm_sqr();
             // |z| > 2 => |z|^2 > 4
             if mod2 > 4. {
+                let mut n = iterations as f64;
                 if self.options.smooth {
                     // Smoothing is:
                     // ln( ln |zn| / ln B ) / ln d
@@ -131,7 +137,7 @@ impl Fractal for Mandelbrot {
 
             // zn+1 = zn^d + c
             z = z.powi(self.options.order) + c;
-            n += 1.;
+            iterations += 1;
         }
         None
     }
@@ -157,48 +163,33 @@ impl Fractal for Newton {
     }
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
-        let mut r = point.x;
-        let mut i = point.y;
-        let mut n = 0.0_f64;
-        while n < self.options.precision {
-            let rr = r * r;
-            let ii = i * i;
+        let mut z = Complex::new(point.x, point.y);
 
-            let r2 = rr - ii;
-            let i2 = 2. * r * i;
+        let mut iterations = 0;
+        let epsilon = 0.0001_f64;
+        let roots = [
+            (Complex::new(1., 0.), Channel::Red),
+            (Complex::new(-0.5, (3_f64).sqrt() / 2_f64), Channel::Green),
+            (Complex::new(-0.5, -(3_f64).sqrt() / 2_f64), Channel::Blue),
+        ];
 
-            let r3 = r * r2 - i * i2;
-            let i3 = r * i2 + i * r2;
+        while iterations < self.options.precision {
+            z -= (z.powi(3) - Complex::new(1., 0.)) / (Complex::new(3., 0.) * z.powi(2));
 
-            let d = (r2 * r2 + i2 * i2) * 3.;
-            r -= (r2 * (r3 - 1.) + i2 * i3) / d;
-            i -= (r2 * i3 - i2 * (r3 - 1.)) / d;
-
-            let n1 = (r - 1.) * (r - 1.0) + i * i;
-            let n2 = (r + 0.5) * (r + 0.5) + (i - 0.866025404) * (i - 0.866025404);
-            let n3 = (r + 0.5) * (r + 0.5) + (i + 0.866025404) * (i + 0.866025404);
-
-            if n1 < 0.0001 || n2 < 0.0001 || n3 < 0.0001 {
-                let channel = if n1 < 0.0001 {
-                    Channel::Red
-                } else if n2 < 0.0001 {
-                    Channel::Green
-                } else {
-                    Channel::Blue
-                };
-
-                if self.options.smooth {
-                    let current_n = match channel {
-                        Channel::Red => n1,
-                        Channel::Green => n2,
-                        Channel::Blue => n3,
-                        _ => 0.,
-                    };
-                    n -= (1. / (50. * current_n)).ln().ln();
+            for (root, channel) in roots.iter() {
+                let convergence = (z - root).norm_sqr();
+                if convergence < epsilon {
+                    let mut n = iterations as f64;
+                    if self.options.smooth {
+                        n -= (1. / (50. * convergence)).ln().ln()
+                    }
+                    return Some(Iterations {
+                        n,
+                        channel: *channel,
+                    });
                 }
-                return Some(Iterations { n, channel });
             }
-            n += 1.0;
+            iterations += 1;
         }
         None
     }
@@ -206,7 +197,7 @@ impl Fractal for Newton {
     fn get_pixel_for_iteration(&self, iterations: IterationsMaybe) -> Pixel {
         if let Some(iterations) = iterations {
             // Expanding normalized iterations on the rgb spectrum:
-            let sn = 255. - iterations.n * self.options.precision;
+            let sn = 255. - iterations.n * (self.options.precision as f64);
             match iterations.channel {
                 Channel::Red => Pixel::from_f64(sn, 0., 0.),
                 Channel::Green => Pixel::from_f64(0., sn, 0.),
@@ -216,5 +207,48 @@ impl Fractal for Newton {
         } else {
             Pixel::void()
         }
+    }
+}
+
+pub struct Julia {
+    options: Options,
+}
+
+impl Julia {
+    pub fn new(options: Options) -> Julia {
+        Julia { options }
+    }
+}
+
+impl Fractal for Julia {
+    fn options(&self) -> &Options {
+        &self.options
+    }
+
+    fn set_options(&mut self, options: Options) {
+        self.options = options
+    }
+
+    fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
+        let mut z = Complex::new(point.x, point.y);
+        // let c = Complex::new(0.3, 0.5);
+        let c = Complex::new(self.options.julia_real, self.options.julia_imaginary);
+        let mut iterations = 0;
+
+        while iterations < self.options.precision {
+            // zn+1 = zn^2 + c
+            z = z.powi(self.options.order) + c;
+            let mod2 = z.norm_sqr();
+            if mod2 > 4. {
+                let mut n = iterations as f64;
+                if self.options.smooth {
+                    n -= mod2.ln().ln() * 1.25;
+                }
+
+                return Some(Iterations::all(n));
+            }
+            iterations += 1;
+        }
+        None
     }
 }

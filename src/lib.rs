@@ -31,8 +31,10 @@ impl Frustal {
         let options = Options {
             variant: Variant::Mandelbrot,
             smooth: true,
-            precision: 25.,
+            precision: 25,
             order: 2,
+            julia_real: -0.8,
+            julia_imaginary: 0.156,
         };
         Frustal {
             width,
