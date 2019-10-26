@@ -1,6 +1,24 @@
+use wasm_bindgen::prelude::*;
+
 use crate::domain::Point;
 use crate::pixel::Pixel;
 use num_complex::Complex;
+
+#[wasm_bindgen]
+#[derive(Clone, Copy, PartialEq)]
+pub enum Variant {
+    Mandelbrot,
+    Newton,
+}
+
+impl Variant {
+    pub fn new(options: Options) -> Box<dyn Fractal> {
+        match options.variant {
+            Variant::Mandelbrot => Box::new(Mandelbrot::new(options)),
+            Variant::Newton => Box::new(Newton::new(options)),
+        }
+    }
+}
 
 enum Channel {
     Red,
@@ -25,13 +43,25 @@ impl Iterations {
 
 pub type IterationsMaybe = Option<Iterations>;
 
+#[wasm_bindgen]
+#[derive(Clone, Copy)]
 pub struct Options {
     pub precision: f64,
     pub smooth: bool,
+    pub order: i32,
+    pub variant: Variant, // for gui purpose
+}
+
+#[wasm_bindgen]
+impl Options {
+    pub fn dup(&self) -> Options {
+        self.clone()
+    }
 }
 
 pub trait Fractal {
     fn options(&self) -> &Options;
+    fn set_options(&mut self, options: Options);
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe;
 
@@ -58,18 +88,21 @@ pub trait Fractal {
 
 pub struct Mandelbrot {
     options: Options,
-    order: i32,
 }
 
 impl Mandelbrot {
-    pub fn new(options: Options, order: i32) -> Mandelbrot {
-        Mandelbrot { options, order }
+    pub fn new(options: Options) -> Mandelbrot {
+        Mandelbrot { options }
     }
 }
 
 impl Fractal for Mandelbrot {
     fn options(&self) -> &Options {
         &self.options
+    }
+
+    fn set_options(&mut self, options: Options) {
+        self.options = options
     }
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
@@ -88,15 +121,16 @@ impl Fractal for Mandelbrot {
                     // ln( ln |zn| / ln B ) / ln d
                     // where B is max(|c|;2^(1/d-1)) and d is the order
                     n -= ((mod2.ln() / 2.)
-                        / c.norm().max((2.0f64).powf(1. / (self.order as f64 - 1.))))
+                        / c.norm()
+                            .max((2.0f64).powf(1. / (self.options.order as f64 - 1.))))
                     .ln()
-                        / (self.order as f64).ln();
+                        / (self.options.order as f64).ln();
                 }
                 return Some(Iterations::all(n));
             }
 
             // zn+1 = zn^d + c
-            z = z.powi(self.order) + c;
+            z = z.powi(self.options.order) + c;
             n += 1.;
         }
         None
@@ -116,6 +150,10 @@ impl Newton {
 impl Fractal for Newton {
     fn options(&self) -> &Options {
         &self.options
+    }
+
+    fn set_options(&mut self, options: Options) {
+        self.options = options
     }
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {

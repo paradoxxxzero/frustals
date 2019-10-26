@@ -1,4 +1,5 @@
-import { Frustal, FractalType } from "frustals";
+import { GUI } from "dat.gui";
+import { Frustal, Variant } from "frustals";
 import { memory } from "frustals/frustals_bg";
 import "./index.sass";
 
@@ -42,11 +43,11 @@ window.addEventListener(
     console.log(keyCode);
     switch (keyCode) {
       case 78:
-        frustal.set_type(FractalType.Newton);
+        frustal.set_type(Variant.Newton);
         render();
         break;
       case 77:
-        frustal.set_type(FractalType.Mandelbrot);
+        frustal.set_type(Variant.Mandelbrot);
         render();
         break;
     }
@@ -55,5 +56,17 @@ window.addEventListener(
 );
 resize();
 
-window.render = render;
+const options = frustal.current_options();
+
+const sync = () => {
+  frustal.sync_options(options);
+  render();
+};
+
+const gui = new GUI();
+gui.add(options, "variant", Variant).onChange(sync);
+gui.add(options, "precision", 2, 2000).onChange(sync);
+gui.add(options, "smooth").onChange(sync);
+gui.add(options, "order", 1, 15).onChange(sync);
+
 window.frustal = frustal;

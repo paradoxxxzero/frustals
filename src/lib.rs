@@ -1,11 +1,11 @@
 mod domain;
 mod fractals;
 mod pixel;
-
-use crate::domain::{Domain, Point};
-use crate::fractals::{Fractal, Mandelbrot, Newton, Options};
-use crate::pixel::Pixel;
 use wasm_bindgen::prelude::*;
+
+pub use crate::domain::{Domain, Point};
+pub use crate::fractals::{Fractal, Options, Variant};
+pub use crate::pixel::Pixel;
 
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
@@ -14,52 +14,6 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 pub fn set_panic_hook() {
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
-}
-
-#[wasm_bindgen]
-pub enum Preset {
-    Mandelbrot,
-    Mandelbrot3,
-    Mandelbrot4,
-    Mandelbrot5,
-    Newton,
-}
-
-fn get_from_preset(preset: Preset) -> Box<dyn Fractal> {
-    match preset {
-        Preset::Mandelbrot => Box::new(Mandelbrot::new(
-            Options {
-                precision: 25.,
-                smooth: true,
-            },
-            2,
-        )),
-        Preset::Mandelbrot3 => Box::new(Mandelbrot::new(
-            Options {
-                precision: 25.,
-                smooth: true,
-            },
-            3,
-        )),
-        Preset::Mandelbrot4 => Box::new(Mandelbrot::new(
-            Options {
-                precision: 25.,
-                smooth: true,
-            },
-            4,
-        )),
-        Preset::Mandelbrot5 => Box::new(Mandelbrot::new(
-            Options {
-                precision: 25.,
-                smooth: true,
-            },
-            5,
-        )),
-        Preset::Newton => Box::new(Newton::new(Options {
-            precision: 20.,
-            smooth: true,
-        })),
-    }
 }
 
 #[wasm_bindgen]
@@ -74,6 +28,12 @@ pub struct Frustal {
 #[wasm_bindgen]
 impl Frustal {
     pub fn new(width: usize, height: usize) -> Frustal {
+        let options = Options {
+            variant: Variant::Mandelbrot,
+            smooth: true,
+            precision: 25.,
+            order: 2,
+        };
         Frustal {
             width,
             height,
@@ -84,12 +44,8 @@ impl Frustal {
                 width,
                 height,
             },
-            fractal: get_from_preset(Preset::Mandelbrot),
+            fractal: Variant::new(options),
         }
-    }
-
-    pub fn set_from_preset(&mut self, preset: Preset) {
-        self.fractal = get_from_preset(preset);
     }
 
     pub fn resize(&mut self, width: usize, height: usize) {
@@ -109,5 +65,17 @@ impl Frustal {
         }
 
         self.data.as_ptr()
+    }
+
+    pub fn sync_options(&mut self, options: &Options) {
+        if self.current_options().variant != options.variant {
+            self.fractal = Variant::new(*options);
+        } else {
+            self.fractal.set_options(*options);
+        }
+    }
+
+    pub fn current_options(&self) -> Options {
+        *self.fractal.options()
     }
 }
