@@ -1,62 +1,127 @@
 import { GUI } from "dat.gui";
 import debounce from "debounce";
-import { Frustal, Variant } from "frustals";
+import { Frustal, Variant, Point } from "frustals";
 import { memory } from "frustals/frustals_bg";
 import presets from "./presets";
 import "./index.sass";
 
 const canvas = document.createElement("canvas");
 const ctx = canvas.getContext("2d");
-const frustal = Frustal.new(canvas.width, canvas.height);
+const { width, height } = document.body.getBoundingClientRect();
+canvas.width = width;
+canvas.height = height;
+const frustal = Frustal.new(width, height);
 
-const render = async () => {
-  const t0 = performance.now();
-  ctx.putImageData(
-    new ImageData(
-      new Uint8ClampedArray(
-        memory.buffer,
-        await frustal.render(),
-        canvas.width * canvas.height * 4
+const render = () =>
+  setTimeout(() => {
+    const t0 = performance.now();
+    ctx.putImageData(
+      new ImageData(
+        new Uint8ClampedArray(
+          memory.buffer,
+          frustal.render(),
+          canvas.width * canvas.height * 4
+        ),
+        canvas.width,
+        canvas.height
       ),
-      canvas.width,
-      canvas.height
-    ),
-    0,
-    0
-  );
-  const t1 = performance.now();
-  console.log("Render " + (t1 - t0) + " ms.");
-};
-
-const resize = () => {
-  const { width, height } = document.body.getBoundingClientRect();
-  canvas.width = width;
-  canvas.height = height;
-  frustal.resize(width, height);
-  render();
-};
+      0,
+      0
+    );
+    const t1 = performance.now();
+    console.log("Render " + (t1 - t0) + " ms.");
+  }, 1);
 
 canvas.classList.add("frustal-canvas");
 document.body.appendChild(canvas);
-window.addEventListener("resize", resize, false);
+
+window.addEventListener(
+  "resize",
+  debounce(() => {
+    const { width, height } = document.body.getBoundingClientRect();
+    canvas.width = width;
+    canvas.height = height;
+    frustal.resize(width, height);
+    render();
+  }, 10),
+  false
+);
+
 window.addEventListener(
   "keydown",
   ({ keyCode }) => {
     switch (keyCode) {
-      case 78:
-        frustal.set_type(Variant.Newton);
-        render();
+      case 37: // left
+        frustal.shift_domain(Point.new(-50, 0));
         break;
-      case 77:
-        frustal.set_type(Variant.Mandelbrot);
-        render();
+      case 38: // up
+        frustal.shift_domain(Point.new(0, -50));
         break;
+      case 39: // right
+        frustal.shift_domain(Point.new(50, 0));
+        break;
+      case 40: // down
+        frustal.shift_domain(Point.new(0, 50));
+        break;
+      case 187: // +
+        frustal.scale_domain(0.75);
+        break;
+      case 189: // -
+        frustal.scale_domain(1.5);
+        break;
+      default:
+        return;
     }
+    render();
   },
   false
 );
-resize();
 
+const drag = {
+  dragging: false
+};
+
+canvas.addEventListener(
+  "mousedown",
+  ({ clientX, clientY }) => {
+    drag.dragging = true;
+    drag.x = clientX;
+    drag.y = clientY;
+  },
+  false
+);
+
+canvas.addEventListener(
+  "mousemove",
+  debounce(({ clientX, clientY }) => {
+    if (!drag.dragging) {
+      return;
+    }
+    frustal.shift_domain(Point.new(clientX - drag.x, clientY - drag.y));
+    render();
+    drag.x = clientX;
+    drag.y = clientY;
+  }, 1),
+  false
+);
+
+canvas.addEventListener(
+  "mouseup",
+  () => {
+    drag.dragging = false;
+  },
+  false
+);
+
+canvas.addEventListener(
+  "wheel",
+  ({ deltaY, clientX, clientY }) => {
+    let scale = deltaY > 0 ? 3 / 2 : 2 / 3;
+    frustal.scale_domain(scale, Point.new(clientX, clientY));
+    render();
+  },
+  false
+);
 const options = frustal.current_options();
 
 const sync = debounce(() => {
@@ -77,4 +142,6 @@ gui.add(options, "julia_imaginary", -1.0, 1.0).onChange(sync);
 gui.add(options, "lightness", 0, 10.0).onChange(sync);
 
 gui.remember(options);
+
+render();
 window.frustal = frustal;

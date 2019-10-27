@@ -1,11 +1,13 @@
 mod domain;
 mod fractals;
 mod pixel;
+mod point;
 use wasm_bindgen::prelude::*;
 
-pub use crate::domain::{Domain, Point};
+pub use crate::domain::Domain;
 pub use crate::fractals::{Fractal, Options, Variant};
 pub use crate::pixel::Pixel;
+pub use crate::point::Point;
 
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
@@ -18,8 +20,6 @@ pub fn set_panic_hook() {
 
 #[wasm_bindgen]
 pub struct Frustal {
-    width: usize,
-    height: usize,
     data: Vec<Pixel>,
     domain: Domain,
     fractal: Box<dyn Fractal>,
@@ -38,25 +38,23 @@ impl Frustal {
             lightness: 1.0,
         };
         Frustal {
-            width,
-            height,
             data: (0..width * height).map(|_| Pixel::void()).collect(),
-            domain: Domain {
-                min: Point { x: -2., y: -1.5 },
-                max: Point { x: 2., y: 1.5 },
-                width,
-                height,
-            },
+            domain: Domain::new(Point::new(width as f64, height as f64)),
             fractal: Variant::new(options),
         }
     }
 
     pub fn resize(&mut self, width: usize, height: usize) {
-        self.width = width;
-        self.height = height;
-        self.domain.width = width;
-        self.domain.height = height;
+        self.domain.resize(Point::new(width as f64, height as f64));
         self.data = (0..width * height).map(|_| Pixel::void()).collect()
+    }
+
+    pub fn shift_domain(&mut self, point: Point) {
+        self.domain.shift(point)
+    }
+
+    pub fn scale_domain(&mut self, factor: f64, center: Point) {
+        self.domain.scale(Point::new(factor, factor), center)
     }
 
     pub fn render(&mut self) -> *const Pixel {

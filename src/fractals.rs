@@ -1,7 +1,7 @@
 use wasm_bindgen::prelude::*;
 
-use crate::domain::Point;
 use crate::pixel::Pixel;
+use crate::point::Point;
 use num_complex::Complex;
 
 #[wasm_bindgen]
@@ -120,11 +120,21 @@ impl Fractal for Mandelbrot {
         let mut z = Complex::new(0_f64, 0_f64);
         let c = Complex::new(point.x, point.y);
 
+        let p = ((point.x - 1. / 4.).powi(2) + point.y.powi(2)).sqrt();
+        if (point.x < p - 2. * p.powi(2) + 1. / 4.)
+            || ((point.x + 1.).powi(2) + point.y.powi(2) < 1. / 16.)
+        {
+            return None;
+        }
+
         let mut iterations = 0;
         while iterations < self.options.precision {
             // zn+1 = zn^d + c
-            z = z.powi(self.options.order) + c;
-
+            if self.options.order == 2 {
+                z = z * z + c;
+            } else {
+                z = z.powi(self.options.order) + c;
+            }
             // |z| = sqrt(a² + b²)
             // |z|² = a² + b² =
             let mod2 = z.norm_sqr();
@@ -340,7 +350,7 @@ impl Fractal for BurningShip {
         while iterations < self.options.precision {
             // zn+1 = (abs(Re(zn)) + abs(Im(zn)))² + c
             // We cheat by inverting z.im.abs() to make it upright
-            z = Complex::new(z.re.abs(), -z.im.abs()).powi(self.options.order) + c;
+            z = Complex::new(z.re.abs(), z.im.abs()).powi(self.options.order) + c;
 
             // |z| = sqrt(a² + b²)
             // |z|² = a² + b²
