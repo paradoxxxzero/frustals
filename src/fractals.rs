@@ -3,6 +3,7 @@ use wasm_bindgen::prelude::*;
 use crate::domain::Point;
 use crate::pixel::Pixel;
 use num_complex::Complex;
+use std::sync::Arc;
 
 #[wasm_bindgen]
 #[derive(Clone, Copy, PartialEq)]
@@ -15,13 +16,13 @@ pub enum Variant {
 }
 
 impl Variant {
-    pub fn new(options: Options) -> Box<dyn Fractal> {
+    pub fn new(options: Options) -> Arc<dyn Fractal> {
         match options.variant {
-            Variant::Mandelbrot => Box::new(Mandelbrot::new(options)),
-            Variant::Newton => Box::new(Newton::new(options)),
-            Variant::Julia => Box::new(Julia::new(options)),
-            Variant::Mandelbar => Box::new(Mandelbar::new(options)),
-            Variant::BurningShip => Box::new(BurningShip::new(options)),
+            Variant::Mandelbrot => Arc::new(Mandelbrot::new(options)),
+            Variant::Newton => Arc::new(Newton::new(options)),
+            Variant::Julia => Arc::new(Julia::new(options)),
+            Variant::Mandelbar => Arc::new(Mandelbar::new(options)),
+            Variant::BurningShip => Arc::new(BurningShip::new(options)),
         }
     }
 }
@@ -69,7 +70,7 @@ impl Options {
     }
 }
 
-pub trait Fractal {
+pub trait Fractal: Send + Sync {
     fn options(&self) -> &Options;
     fn set_options(&mut self, options: Options);
 

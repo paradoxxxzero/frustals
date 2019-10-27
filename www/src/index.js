@@ -11,11 +11,12 @@ const frustal = Frustal.new(canvas.width, canvas.height);
 
 const render = async () => {
   const t0 = performance.now();
+  frustal.render();
   ctx.putImageData(
     new ImageData(
       new Uint8ClampedArray(
         memory.buffer,
-        await frustal.render(),
+        frustal.data_ptr(),
         canvas.width * canvas.height * 4
       ),
       canvas.width,
