@@ -57,15 +57,26 @@ impl Frustal {
         self.domain.scale(Point::new(factor, factor), center)
     }
 
-    pub fn render(&mut self) -> *const Pixel {
-        set_panic_hook();
+    pub fn data_ptr(&mut self) -> *const Pixel {
+        self.data.as_ptr()
+    }
 
+    pub fn render(&mut self) {
         for (i, point) in self.domain.iter().enumerate() {
             let pixel = self.fractal.get_pixel_at_point(point);
             self.data[i].from(pixel);
         }
+    }
 
-        self.data.as_ptr()
+    pub fn partial_render(&mut self, skip: usize, index: usize) {
+        set_panic_hook();
+        for (i, point) in self.domain.iter().enumerate() {
+            if (i + index) % skip != 0 {
+                continue;
+            }
+            let pixel = self.fractal.get_pixel_at_point(point);
+            self.data[i].from(pixel);
+        }
     }
 
     pub fn sync_options(&mut self, options: &Options) {

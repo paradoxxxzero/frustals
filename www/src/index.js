@@ -11,26 +11,47 @@ const { width, height } = document.body.getBoundingClientRect();
 canvas.width = width;
 canvas.height = height;
 const frustal = Frustal.new(width, height);
+let dataPtr = frustal.data_ptr();
 
-const render = () =>
-  setTimeout(() => {
-    const t0 = performance.now();
-    ctx.putImageData(
-      new ImageData(
-        new Uint8ClampedArray(
-          memory.buffer,
-          frustal.render(),
-          canvas.width * canvas.height * 4
-        ),
-        canvas.width,
-        canvas.height
+let renderId = 0;
+
+const draw = () => {
+  ctx.putImageData(
+    new ImageData(
+      new Uint8ClampedArray(
+        memory.buffer,
+        dataPtr,
+        canvas.width * canvas.height * 4
       ),
-      0,
-      0
-    );
-    const t1 = performance.now();
-    console.log("Render " + (t1 - t0) + " ms.");
-  }, 1);
+      canvas.width,
+      canvas.height
+    ),
+    0,
+    0
+  );
+};
+
+// const _render = async (skip, index) => {
+//   const t0 = performance.now();
+//
+//   const t1 = performance.now();
+//   console.log(`Render ${index}/${skip} : ${t1 - t0}ms.`);
+// };
+
+const render = async () => {
+  const id = ++renderId;
+  const splits = 16;
+  let i = 0;
+  while (i++ < splits) {
+    await frustal.partial_render(splits, i);
+    if (id === renderId) {
+      draw();
+      await new Promise(resolve => setTimeout(resolve, 1));
+    } else {
+      return;
+    }
+  }
+};
 
 canvas.classList.add("frustal-canvas");
 document.body.appendChild(canvas);
@@ -42,6 +63,7 @@ window.addEventListener(
     canvas.width = width;
     canvas.height = height;
     frustal.resize(width, height);
+    dataPtr = frustal.data_ptr();
     render();
   }, 10),
   false
