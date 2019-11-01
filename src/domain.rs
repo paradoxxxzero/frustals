@@ -25,10 +25,10 @@ impl<'a> Iterator for DomainIterator<'a> {
         }
         self.x += 1;
 
-        Some(self.domain.project(Point::new(
-            self.x as f64,
-            (self.domain.size.y - self.y as f64),
-        )))
+        Some(
+            self.domain
+                .project(Point::new(self.x as f64, self.y as f64)),
+        )
     }
 }
 

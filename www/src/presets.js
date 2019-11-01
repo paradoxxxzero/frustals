@@ -144,6 +144,38 @@ export default {
         y: 0,
         scale: 1.25
       }
+    },
+    "Burning ships": {
+      "0": {
+        variant: 4,
+        precision: 250,
+        smooth: true,
+        order: 2,
+        julia_real: -0.8,
+        julia_imaginary: 0.156,
+        lightness: 3.5
+      },
+      "1": {
+        x: -1.623553916544455,
+        y: -0.02981489359324737,
+        scale: 0.040091241229324046
+      }
+    },
+    "Creepy captain": {
+      "0": {
+        variant: 4,
+        precision: 500,
+        smooth: true,
+        order: 2,
+        julia_real: -0.31041490262489413,
+        julia_imaginary: 0.156,
+        lightness: 1.4970364098221847
+      },
+      "1": {
+        x: -1.0303000524781338,
+        y: -0.6598474373177842,
+        scale: 0.000003
+      }
     }
   },
   closed: false,

@@ -120,7 +120,7 @@ canvas.addEventListener(
     if (!drag.dragging) {
       return;
     }
-    frustal.shift_domain(Point.new(drag.x - clientX, clientY - drag.y));
+    frustal.shift_domain(Point.new(drag.x - clientX, drag.y - clientY));
     updateDomain();
     render();
     drag.x = clientX;
@@ -141,7 +141,7 @@ canvas.addEventListener(
   "wheel",
   ({ deltaY, clientX, clientY }) => {
     const { height } = document.body.getBoundingClientRect();
-    frustal.zoom_domain(deltaY, Point.new(clientX, height - clientY));
+    frustal.zoom_domain(deltaY, Point.new(clientX, clientY));
     updateDomain();
     render();
   },
