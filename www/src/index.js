@@ -94,6 +94,7 @@ window.addEventListener(
       default:
         return;
     }
+    updateDomain();
     render();
   },
   false
@@ -120,6 +121,7 @@ canvas.addEventListener(
       return;
     }
     frustal.shift_domain(Point.new(clientX - drag.x, clientY - drag.y));
+    updateDomain();
     render();
     drag.x = clientX;
     drag.y = clientY;
@@ -140,6 +142,7 @@ canvas.addEventListener(
   ({ deltaY, clientX, clientY }) => {
     let scale = deltaY > 0 ? 3 / 2 : 2 / 3;
     frustal.scale_domain(scale, Point.new(clientX, clientY));
+    updateDomain();
     render();
   },
   false
@@ -163,7 +166,34 @@ gui.add(options, "julia_real", -1.0, 1.0).onChange(sync);
 gui.add(options, "julia_imaginary", -1.0, 1.0).onChange(sync);
 gui.add(options, "lightness", 0, 10.0).onChange(sync);
 
-gui.remember(options);
+const { min, max } = frustal.current_domain();
+const view = {
+  xMin: min.x,
+  yMin: min.y,
+  xMax: min.x,
+  yMax: min.y
+};
 
+const updateDomain = () => {
+  const { min, max } = frustal.current_domain();
+  view.xMin = min.x;
+  view.yMin = min.y;
+  view.xMax = max.x;
+  view.yMax = max.y;
+  gui.__controllers.map(c => c.updateDisplay());
+};
+
+gui.remember(options);
+const syncDomain = debounce((...args) => {
+  frustal.change_domain(view.xMin, view.yMin, view.xMax, view.yMax);
+  render();
+}, 25);
+
+gui.add(view, "xMin").onChange(syncDomain);
+gui.add(view, "yMin").onChange(syncDomain);
+gui.add(view, "xMax").onChange(syncDomain);
+gui.add(view, "xMax").onChange(syncDomain);
+
+gui.remember(view);
 render();
 window.frustal = frustal;

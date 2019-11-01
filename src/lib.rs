@@ -19,6 +19,12 @@ pub fn set_panic_hook() {
 }
 
 #[wasm_bindgen]
+pub struct DomainOption {
+    pub min: Point,
+    pub max: Point,
+}
+
+#[wasm_bindgen]
 pub struct Frustal {
     data: Vec<Pixel>,
     domain: Domain,
@@ -51,6 +57,11 @@ impl Frustal {
 
     pub fn shift_domain(&mut self, point: Point) {
         self.domain.shift(point)
+    }
+
+    pub fn change_domain(&mut self, xmin: f64, ymin: f64, xmax: f64, ymax: f64) {
+        self.domain
+            .change(Point::new(xmin, ymin), Point::new(xmax, ymax))
     }
 
     pub fn scale_domain(&mut self, factor: f64, center: Point) {
@@ -89,5 +100,12 @@ impl Frustal {
 
     pub fn current_options(&self) -> Options {
         *self.fractal.options()
+    }
+
+    pub fn current_domain(&self) -> DomainOption {
+        DomainOption {
+            min: self.domain.min,
+            max: self.domain.max,
+        }
     }
 }

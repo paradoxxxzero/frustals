@@ -71,8 +71,9 @@ impl Domain {
         self.min + point * (self.max - self.min) / self.size
     }
 
-    fn center(&self) -> Point {
-        self.min + (self.max - self.min) / Point::new(2., 2.)
+    pub fn change(&mut self, min: Point, max: Point) {
+        self.min = min;
+        self.max = max;
     }
 
     pub fn shift(&mut self, point: Point) {
