@@ -120,11 +120,13 @@ impl Fractal for Mandelbrot {
         let mut z = Complex::new(0_f64, 0_f64);
         let c = Complex::new(point.x, point.y);
 
-        let p = ((point.x - 1. / 4.).powi(2) + point.y.powi(2)).sqrt();
-        if (point.x < p - 2. * p.powi(2) + 1. / 4.)
-            || ((point.x + 1.).powi(2) + point.y.powi(2) < 1. / 16.)
-        {
-            return None;
+        if self.options.order == 2 {
+            let p = ((point.x - 1. / 4.).powi(2) + point.y.powi(2)).sqrt();
+            if (point.x < p - 2. * p.powi(2) + 1. / 4.)
+                || ((point.x + 1.).powi(2) + point.y.powi(2) < 1. / 16.)
+            {
+                return None;
+            }
         }
 
         let mut iterations = 0;

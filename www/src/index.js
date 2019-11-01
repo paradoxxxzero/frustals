@@ -69,36 +69,36 @@ window.addEventListener(
   false
 );
 
-window.addEventListener(
-  "keydown",
-  ({ keyCode }) => {
-    switch (keyCode) {
-      case 37: // left
-        frustal.shift_domain(Point.new(-50, 0));
-        break;
-      case 38: // up
-        frustal.shift_domain(Point.new(0, -50));
-        break;
-      case 39: // right
-        frustal.shift_domain(Point.new(50, 0));
-        break;
-      case 40: // down
-        frustal.shift_domain(Point.new(0, 50));
-        break;
-      case 187: // +
-        frustal.scale_domain(0.75);
-        break;
-      case 189: // -
-        frustal.scale_domain(1.5);
-        break;
-      default:
-        return;
-    }
-    updateDomain();
-    render();
-  },
-  false
-);
+// window.addEventListener(
+//   "keydown",
+//   ({ keyCode }) => {
+//     switch (keyCode) {
+//       case 37: // left
+//         frustal.shift_domain(Point.new(-50, 0));
+//         break;
+//       case 38: // up
+//         frustal.shift_domain(Point.new(0, -50));
+//         break;
+//       case 39: // right
+//         frustal.shift_domain(Point.new(50, 0));
+//         break;
+//       case 40: // down
+//         frustal.shift_domain(Point.new(0, 50));
+//         break;
+//       case 187: // +
+//         frustal.scale_domain(0.75);
+//         break;
+//       case 189: // -
+//         frustal.scale_domain(1.5);
+//         break;
+//       default:
+//         return;
+//     }
+//     updateDomain();
+//     render();
+//   },
+//   false
+// );
 
 const drag = {
   dragging: false
@@ -120,7 +120,7 @@ canvas.addEventListener(
     if (!drag.dragging) {
       return;
     }
-    frustal.shift_domain(Point.new(clientX - drag.x, clientY - drag.y));
+    frustal.shift_domain(Point.new(drag.x - clientX, clientY - drag.y));
     updateDomain();
     render();
     drag.x = clientX;
@@ -140,8 +140,8 @@ canvas.addEventListener(
 canvas.addEventListener(
   "wheel",
   ({ deltaY, clientX, clientY }) => {
-    let scale = deltaY > 0 ? 3 / 2 : 2 / 3;
-    frustal.scale_domain(scale, Point.new(clientX, clientY));
+    const { height } = document.body.getBoundingClientRect();
+    frustal.zoom_domain(deltaY, Point.new(clientX, height - clientY));
     updateDomain();
     render();
   },
@@ -166,34 +166,44 @@ gui.add(options, "julia_real", -1.0, 1.0).onChange(sync);
 gui.add(options, "julia_imaginary", -1.0, 1.0).onChange(sync);
 gui.add(options, "lightness", 0, 10.0).onChange(sync);
 
-const { min, max } = frustal.current_domain();
+const { origin, scale } = frustal.current_domain();
 const view = {
-  xMin: min.x,
-  yMin: min.y,
-  xMax: min.x,
-  yMax: min.y
+  x: origin.x,
+  y: origin.y,
+  scale: scale
 };
 
 const updateDomain = () => {
-  const { min, max } = frustal.current_domain();
-  view.xMin = min.x;
-  view.yMin = min.y;
-  view.xMax = max.x;
-  view.yMax = max.y;
+  const { origin, scale } = frustal.current_domain();
+  view.x = origin.x;
+  view.y = origin.y;
+  view.scale = scale;
   gui.__controllers.map(c => c.updateDisplay());
 };
 
 gui.remember(options);
 const syncDomain = debounce((...args) => {
-  frustal.change_domain(view.xMin, view.yMin, view.xMax, view.yMax);
+  frustal.change_domain(view.x, view.y, view.scale);
   render();
 }, 25);
 
-gui.add(view, "xMin").onChange(syncDomain);
-gui.add(view, "yMin").onChange(syncDomain);
-gui.add(view, "xMax").onChange(syncDomain);
-gui.add(view, "xMax").onChange(syncDomain);
+gui
+  .add(view, "x")
+  .step(0.000001)
+  .onChange(syncDomain);
+gui
+  .add(view, "y")
+  .step(0.000001)
+  .onChange(syncDomain);
+gui
+  .add(view, "scale")
+  .min(0)
+  .step(0.000001)
+  .onChange(syncDomain);
 
 gui.remember(view);
 render();
 window.frustal = frustal;
+window.Point = Point;
+window.render = render;
+window.updateDomain = updateDomain;
