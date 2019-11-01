@@ -1,5 +1,4 @@
 export default {
-  preset: "Newton",
   remembered: {
     Mandelbrot: {
       "0": {
@@ -143,6 +142,22 @@ export default {
         x: 0,
         y: 0,
         scale: 1.25
+      }
+    },
+    "Julia firework": {
+      "0": {
+        variant: 2,
+        precision: 3000,
+        smooth: true,
+        order: 2,
+        julia_real: -0.39,
+        julia_imaginary: 0.6,
+        lightness: 6
+      },
+      "1": {
+        x: -0.38,
+        y: 0.34,
+        scale: 0.1
       }
     },
     "Burning ships": {

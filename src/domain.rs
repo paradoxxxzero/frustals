@@ -42,11 +42,6 @@ impl Domain {
     pub fn new(size: Point) -> Domain {
         let origin = Point::new(0., 0.);
         let scale = 1.;
-        // let point = if size.x > size.y {
-        //     Point::new(2. * size.x / size.y, 1.5)
-        // } else {
-        //     Point::new(2., 1.5 * size.y / size.x)
-        // };
         Domain {
             size,
             origin,
@@ -55,13 +50,6 @@ impl Domain {
     }
 
     pub fn resize(&mut self, size: Point) {
-        // let point = if size.x > size.y {
-        //     Point::new(2. * size.x / size.y, 1.5)
-        // } else {
-        //     Point::new(2., 1.5 * size.y / size.x)
-        // };
-        // self.min = point * Point::new(-1., -1.);
-        // self.max = point;
         self.size = size;
     }
 

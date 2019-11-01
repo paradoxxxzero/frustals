@@ -12,7 +12,7 @@ canvas.width = width;
 canvas.height = height;
 const frustal = Frustal.new(width, height);
 let dataPtr = frustal.data_ptr();
-
+let started = false;
 let renderId = 0;
 
 const draw = () => {
@@ -31,23 +31,23 @@ const draw = () => {
   );
 };
 
-// const _render = async (skip, index) => {
-//   const t0 = performance.now();
-//
-//   const t1 = performance.now();
-//   console.log(`Render ${index}/${skip} : ${t1 - t0}ms.`);
-// };
-
 const render = async () => {
+  if (!started) {
+    return;
+  }
   const id = ++renderId;
   const splits = 16;
   let i = 0;
   while (i++ < splits) {
+    const t0 = performance.now();
     await frustal.partial_render(splits, i);
+    const t1 = performance.now();
     if (id === renderId) {
+      console.log(`Render ${i}/${splits} : ${t1 - t0}ms. Drawn`);
       draw();
       await new Promise(resolve => setTimeout(resolve, 1));
     } else {
+      console.log(`Render ${i}/${splits} : ${t1 - t0}ms. Not drawn`);
       return;
     }
   }
@@ -156,7 +156,7 @@ const sync = debounce(() => {
 
 const gui = new GUI({
   load: presets,
-  preset: "Mandelbrot"
+  preset: decodeURIComponent(location.hash.replace(/^#/, "")) || "Newton"
 });
 gui.add(options, "variant", Variant).onChange(sync);
 gui.add(options, "precision", 2).onChange(sync);
@@ -202,8 +202,20 @@ gui
   .onChange(syncDomain);
 
 gui.remember(view);
-render();
+gui.revert();
+gui.__preset_select.addEventListener("change", ({ target: { value } }) => {
+  location.hash = `#${encodeURIComponent(value)}`;
+});
+window.addEventListener("hashchange", event => {
+  gui.preset = decodeURIComponent(location.hash.replace(/^#/, "")) || "Newton";
+  gui.revert();
+});
+setTimeout(() => {
+  started = true;
+  render();
+}, 30);
 window.frustal = frustal;
 window.Point = Point;
 window.render = render;
 window.updateDomain = updateDomain;
+window.gui = gui;
