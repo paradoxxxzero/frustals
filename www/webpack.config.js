@@ -44,7 +44,8 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       title: "Frustals",
-      chunks: ["main"]
+      chunks: ["main"],
+      template: path.resolve(__dirname, "src", "index.html")
     })
   ],
   devServer: {

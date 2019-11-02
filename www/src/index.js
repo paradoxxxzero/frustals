@@ -135,7 +135,9 @@ window.addEventListener(
 const drag = {
   handler: null,
   x: null,
-  y: null
+  y: null,
+  x2: null,
+  y2: null
 };
 
 mainCanvas.addEventListener(
@@ -146,11 +148,81 @@ mainCanvas.addEventListener(
     mainCanvas.addEventListener(
       "mousemove",
       (drag.handler = debounce(({ clientX, clientY }) => {
+        if (!drag.handler || (drag.x === clientX && drag.y === clientY)) {
+          return;
+        }
         frustal.shift_domain(Point.new(drag.x - clientX, drag.y - clientY));
         updateDomain();
         render();
         drag.x = clientX;
         drag.y = clientY;
+      }, 1)),
+      false
+    );
+  },
+  false
+);
+mainCanvas.addEventListener(
+  "touchstart",
+  ({ touches }) => {
+    drag.x = touches[0].clientX;
+    drag.y = touches[0].clientY;
+    if (touches.length > 1) {
+      drag.x2 = touches[1].clientX;
+      drag.y2 = touches[1].clientY;
+    }
+
+    mainCanvas.addEventListener(
+      "touchmove",
+      (drag.handler = debounce(({ touches }) => {
+        if (!drag.handler) {
+          return;
+        }
+        let hasZoomed = false;
+        if (touches.length > 1) {
+          if (!drag.x2) {
+            drag.x2 = touches[1].clientX;
+            drag.y2 = touches[1].clientY;
+          } else {
+            const x = touches[0].clientX;
+            const y = touches[0].clientY;
+            const x2 = touches[1].clientX;
+            const y2 = touches[1].clientY;
+
+            const xc = (x + x2 + drag.x + drag.x2) / 4;
+            const yc = (y + y2 + drag.y + drag.y2) / 4;
+            const previousDistance = Math.sqrt(
+              (drag.x2 - drag.x) * (drag.x2 - drag.x) +
+                (drag.y2 - drag.y) * (drag.y2 - drag.y)
+            );
+            const currentDistance = Math.sqrt(
+              (x2 - x) * (x2 - x) + (y2 - y) * (y2 - y)
+            );
+            frustal.zoom_domain(
+              previousDistance - currentDistance,
+              Point.new(xc, yc)
+            );
+            updateDomain();
+            render();
+
+            drag.x = x;
+            drag.y = y;
+            drag.x2 = x2;
+            drag.y2 = y2;
+            hasZoomed = true;
+          }
+        } else {
+          drag.x2 = null;
+          drag.y2 = null;
+        }
+        if (!hasZoomed) {
+          const [{ clientX, clientY }] = touches;
+          frustal.shift_domain(Point.new(drag.x - clientX, drag.y - clientY));
+          updateDomain();
+          render();
+          drag.x = clientX;
+          drag.y = clientY;
+        }
       }, 1)),
       false
     );
@@ -163,6 +235,19 @@ window.addEventListener(
   () => {
     if (drag.handler) {
       mainCanvas.removeEventListener("mousemove", drag.handler);
+      mainCanvas.removeEventListener("touchmove", drag.handler);
+      drag.handler = drag.x = drag.x2 = drag.y = drag.y2 = null;
+    }
+  },
+  false
+);
+window.addEventListener(
+  "touchend",
+  () => {
+    if (drag.handler) {
+      mainCanvas.removeEventListener("mousemove", drag.handler);
+      mainCanvas.removeEventListener("touchmove", drag.handler);
+      drag.handler = drag.x = drag.x2 = drag.y = drag.y2 = null;
     }
   },
   false
