@@ -40,7 +40,7 @@ const render = async () => {
   let i = 0;
   while (i++ < splits) {
     const t0 = performance.now();
-    await frustal.partial_render(splits, i);
+    await frustal.partial_render(splits, i - 1);
     const t1 = performance.now();
     if (id === renderId) {
       console.log(`Render ${i}/${splits} : ${t1 - t0}ms. Drawn`);
@@ -101,38 +101,37 @@ window.addEventListener(
 // );
 
 const drag = {
-  dragging: false
+  handler: null,
+  x: null,
+  y: null
 };
 
 canvas.addEventListener(
   "mousedown",
   ({ clientX, clientY }) => {
-    drag.dragging = true;
     drag.x = clientX;
     drag.y = clientY;
+    canvas.addEventListener(
+      "mousemove",
+      (drag.handler = debounce(({ clientX, clientY }) => {
+        frustal.shift_domain(Point.new(drag.x - clientX, drag.y - clientY));
+        updateDomain();
+        render();
+        drag.x = clientX;
+        drag.y = clientY;
+      }, 1)),
+      false
+    );
   },
   false
 );
 
-canvas.addEventListener(
-  "mousemove",
-  debounce(({ clientX, clientY }) => {
-    if (!drag.dragging) {
-      return;
-    }
-    frustal.shift_domain(Point.new(drag.x - clientX, drag.y - clientY));
-    updateDomain();
-    render();
-    drag.x = clientX;
-    drag.y = clientY;
-  }, 1),
-  false
-);
-
-canvas.addEventListener(
+window.addEventListener(
   "mouseup",
   () => {
-    drag.dragging = false;
+    if (drag.handler) {
+      canvas.removeEventListener("mousemove", drag.handler);
+    }
   },
   false
 );

@@ -79,7 +79,6 @@ impl Frustal {
     }
 
     pub fn partial_render(&mut self, skip: usize, index: usize) {
-        set_panic_hook();
         for (i, point) in self.domain.iter().enumerate() {
             if (i + index) % skip != 0 {
                 continue;
