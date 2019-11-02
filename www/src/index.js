@@ -5,30 +5,46 @@ import { memory } from "frustals/frustals_bg";
 import presets from "./presets";
 import "./index.sass";
 
-const canvas = document.createElement("canvas");
-const ctx = canvas.getContext("2d");
+const jsOptions = {
+  preview: true,
+  previewScale: 10
+};
+
+const mainCanvas = document.createElement("canvas");
+const previewCanvas = document.createElement("canvas");
 const { width, height } = document.body.getBoundingClientRect();
-canvas.width = width;
-canvas.height = height;
-const frustal = Frustal.new(width, height);
-let dataPtr = frustal.data_ptr();
+
+previewCanvas.width = width / jsOptions.previewScale;
+previewCanvas.height = height / jsOptions.previewScale;
+previewCanvas.classList.add("frustal-canvas");
+previewCanvas.classList.add("frustal-preview");
+document.body.appendChild(previewCanvas);
+
+mainCanvas.width = width;
+mainCanvas.height = height;
+mainCanvas.classList.add("frustal-canvas");
+document.body.appendChild(mainCanvas);
+
+const frustal = Frustal.new(width, height, jsOptions.previewScale);
 let started = false;
 let renderId = 0;
 
-const draw = () => {
-  ctx.putImageData(
-    new ImageData(
-      new Uint8ClampedArray(
-        memory.buffer,
-        dataPtr,
-        canvas.width * canvas.height * 4
+const draw = (canvas, ptr) => {
+  canvas
+    .getContext("2d")
+    .putImageData(
+      new ImageData(
+        new Uint8ClampedArray(
+          memory.buffer,
+          ptr,
+          canvas.width * canvas.height * 4
+        ),
+        canvas.width,
+        canvas.height
       ),
-      canvas.width,
-      canvas.height
-    ),
-    0,
-    0
-  );
+      0,
+      0
+    );
 };
 
 const render = async () => {
@@ -36,34 +52,50 @@ const render = async () => {
     return;
   }
   const id = ++renderId;
-  const splits = 16;
-  let i = 0;
-  while (i++ < splits) {
+  let interactionDelay = 0;
+  if (jsOptions.preview) {
+    mainCanvas
+      .getContext("2d")
+      .clearRect(0, 0, mainCanvas.width, mainCanvas.height);
     const t0 = performance.now();
-    await frustal.partial_render(splits, i - 1);
+    await frustal.preview_render();
     const t1 = performance.now();
-    if (id === renderId) {
-      console.log(`Render ${i}/${splits} : ${t1 - t0}ms. Drawn`);
-      draw();
-      await new Promise(resolve => setTimeout(resolve, 1));
-    } else {
-      console.log(`Render ${i}/${splits} : ${t1 - t0}ms. Not drawn`);
+    console.log(`Preview render : ${t1 - t0}ms. Drawn`);
+    draw(previewCanvas, frustal.preview_data_ptr());
+    interactionDelay = t1 - t0 + 50;
+  }
+  setTimeout(async () => {
+    if (id !== renderId) {
       return;
     }
-  }
+    frustal.reset_data();
+    const splits = 16;
+    let i = 0;
+    while (i++ < splits) {
+      const t0 = performance.now();
+      await frustal.partial_render(splits, i - 1);
+      const t1 = performance.now();
+      if (id === renderId) {
+        console.log(`Render ${i}/${splits} : ${t1 - t0}ms. Drawn`);
+        draw(mainCanvas, frustal.data_ptr());
+        await new Promise(resolve => setTimeout(resolve, 1));
+      } else {
+        console.log(`Render ${i}/${splits} : ${t1 - t0}ms. Not drawn`);
+        return;
+      }
+    }
+  }, interactionDelay);
 };
-
-canvas.classList.add("frustal-canvas");
-document.body.appendChild(canvas);
 
 window.addEventListener(
   "resize",
   debounce(() => {
     const { width, height } = document.body.getBoundingClientRect();
-    canvas.width = width;
-    canvas.height = height;
+    mainCanvas.width = width;
+    mainCanvas.height = height;
+    previewCanvas.width = Math.floor(width / jsOptions.previewScale);
+    previewCanvas.height = Math.floor(height / jsOptions.previewScale);
     frustal.resize(width, height);
-    dataPtr = frustal.data_ptr();
     render();
   }, 10),
   false
@@ -106,12 +138,12 @@ const drag = {
   y: null
 };
 
-canvas.addEventListener(
+mainCanvas.addEventListener(
   "mousedown",
   ({ clientX, clientY }) => {
     drag.x = clientX;
     drag.y = clientY;
-    canvas.addEventListener(
+    mainCanvas.addEventListener(
       "mousemove",
       (drag.handler = debounce(({ clientX, clientY }) => {
         frustal.shift_domain(Point.new(drag.x - clientX, drag.y - clientY));
@@ -130,13 +162,13 @@ window.addEventListener(
   "mouseup",
   () => {
     if (drag.handler) {
-      canvas.removeEventListener("mousemove", drag.handler);
+      mainCanvas.removeEventListener("mousemove", drag.handler);
     }
   },
   false
 );
 
-canvas.addEventListener(
+mainCanvas.addEventListener(
   "wheel",
   ({ deltaY, clientX, clientY }) => {
     const { height } = document.body.getBoundingClientRect();
@@ -201,6 +233,31 @@ gui
   .onChange(syncDomain);
 
 gui.remember(view);
+
+gui.add(jsOptions, "preview").onChange(() => {
+  previewCanvas
+    .getContext("2d")
+    .clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+});
+gui
+  .add(jsOptions, "previewScale")
+  .min(1)
+  .max(20)
+  .step(1)
+  .onChange(
+    debounce(() => {
+      previewCanvas.width = Math.floor(
+        mainCanvas.width / jsOptions.previewScale
+      );
+      previewCanvas.height = Math.floor(
+        mainCanvas.height / jsOptions.previewScale
+      );
+      frustal.resize_preview(jsOptions.previewScale);
+    }, 10)
+  );
+
+gui.remember(jsOptions);
+
 gui.revert();
 gui.__preset_select.addEventListener("change", ({ target: { value } }) => {
   location.hash = `#${encodeURIComponent(value)}`;

@@ -27,13 +27,15 @@ pub struct DomainOption {
 #[wasm_bindgen]
 pub struct Frustal {
     data: Vec<Pixel>,
+    preview_data: Vec<Pixel>,
     domain: Domain,
     fractal: Box<dyn Fractal>,
+    preview_resolution: usize,
 }
 
 #[wasm_bindgen]
 impl Frustal {
-    pub fn new(width: usize, height: usize) -> Frustal {
+    pub fn new(width: usize, height: usize, preview_resolution: usize) -> Frustal {
         let options = Options {
             variant: Variant::Mandelbrot,
             smooth: true,
@@ -45,14 +47,36 @@ impl Frustal {
         };
         Frustal {
             data: (0..width * height).map(|_| Pixel::void()).collect(),
+            preview_data: (0..(width * height) / (preview_resolution * preview_resolution))
+                .map(|_| Pixel::void())
+                .collect(),
             domain: Domain::new(Point::new(width as f64, height as f64)),
             fractal: Variant::new(options),
+            preview_resolution,
         }
     }
 
     pub fn resize(&mut self, width: usize, height: usize) {
         self.domain.resize(Point::new(width as f64, height as f64));
-        self.data = (0..width * height).map(|_| Pixel::void()).collect()
+        self.data = (0..width * height).map(|_| Pixel::void()).collect();
+        self.preview_data = (0..(width * height)
+            / (self.preview_resolution * self.preview_resolution))
+            .map(|_| Pixel::void())
+            .collect();
+    }
+
+    pub fn resize_preview(&mut self, preview_resolution: usize) {
+        self.preview_resolution = preview_resolution;
+        self.preview_data = (0..((self.domain.size.x as usize) * (self.domain.size.y as usize))
+            / (self.preview_resolution * self.preview_resolution))
+            .map(|_| Pixel::void())
+            .collect();
+    }
+
+    pub fn reset_data(&mut self) {
+        for point in &mut self.data {
+            *point = Pixel::void()
+        }
     }
 
     pub fn shift_domain(&mut self, point: Point) {
@@ -71,10 +95,33 @@ impl Frustal {
         self.data.as_ptr()
     }
 
+    pub fn preview_data_ptr(&mut self) -> *const Pixel {
+        self.preview_data.as_ptr()
+    }
+
     pub fn render(&mut self) {
         for (i, point) in self.domain.iter().enumerate() {
             let pixel = self.fractal.get_pixel_at_point(point);
             self.data[i].from(pixel);
+        }
+    }
+
+    pub fn preview_render(&mut self) {
+        set_panic_hook();
+        let width = self.domain.size.x as usize;
+        let height = self.domain.size.y as usize;
+        let len = (width * height) / (self.preview_resolution * self.preview_resolution);
+        let mut j = 0;
+        for (i, point) in self.domain.iter().enumerate() {
+            if i % self.preview_resolution != 0
+                || ((i + self.preview_resolution - 1) / width) % self.preview_resolution != 0
+                || j >= len
+            {
+                continue;
+            }
+            let pixel = self.fractal.get_pixel_at_point(point);
+            self.preview_data[j].from(pixel);
+            j += 1;
         }
     }
 

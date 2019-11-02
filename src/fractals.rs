@@ -88,7 +88,7 @@ pub trait Fractal {
                 );
             }
         } else {
-            Pixel::void()
+            Pixel::black()
         }
     }
 
@@ -221,10 +221,10 @@ impl Fractal for Newton {
                 Channel::Red => Pixel::from_f64(sn, 0., 0.),
                 Channel::Green => Pixel::from_f64(0., sn, 0.),
                 Channel::Blue => Pixel::from_f64(0., 0., sn),
-                _ => Pixel::void(),
+                _ => Pixel::black(),
             }
         } else {
-            Pixel::void()
+            Pixel::black()
         }
     }
 }

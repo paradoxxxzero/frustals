@@ -22,8 +22,12 @@ impl Pixel {
         }
     }
 
-    pub fn void() -> Pixel {
+    pub fn black() -> Pixel {
         Pixel::new(0, 0, 0, 255)
+    }
+
+    pub fn void() -> Pixel {
+        Pixel::new(0, 0, 0, 0)
     }
 
     pub fn from(&mut self, source: Pixel) {
