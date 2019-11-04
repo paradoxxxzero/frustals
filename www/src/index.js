@@ -11,7 +11,9 @@ const fractalLabels = {
   BurningShip: "Burning Ship",
   Newton: "Newton z³ - 1",
   Newton2: "Newton z³ - 2z + 2",
-  Newton3: "Newton z⁶ + z³ - 1"
+  Newton3: "Newton z⁶ + z³ - 1",
+  Newton4: "Newton z⁵ - 2",
+  Newton5: "Newton z³ - 1 + 1/z"
 };
 
 const jsOptions = {

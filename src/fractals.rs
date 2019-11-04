@@ -14,6 +14,8 @@ pub enum Variant {
     Newton,
     Newton2,
     Newton3,
+    Newton4,
+    Newton5,
 }
 
 impl Variant {
@@ -21,6 +23,13 @@ impl Variant {
         match *self {
             // zn+1 = zn^d + c
             Variant::Mandelbrot => Box::new(Mandelbrot {}),
+            // zn+1 = zn^d + c
+            Variant::Julia => Box::new(Julia {}),
+            // zn+1 = conj(zn)^d + c
+            Variant::Mandelbar => Box::new(Mandelbar {}),
+            // zn+1 = (abs(Re(zn)) + abs(Im(zn)))^d + c
+            Variant::BurningShip => Box::new(BurningShip {}),
+
             // zn+1 = zn - p(zn) / p'(zn)
             // p = z³ - 1
             Variant::Newton => Box::new(Newton {
@@ -55,12 +64,32 @@ impl Variant {
                     (Complex::new(-0.42590, 0.73768), Channel::Magenta),
                 ],
             }),
-            // zn+1 = zn^d + c
-            Variant::Julia => Box::new(Julia {}),
-            // zn+1 = conj(zn)^d + c
-            Variant::Mandelbar => Box::new(Mandelbar {}),
-            // zn+1 = (abs(Re(zn)) + abs(Im(zn)))^d + c
-            Variant::BurningShip => Box::new(BurningShip {}),
+            // p = z⁵ - 2
+            Variant::Newton4 => Box::new(Newton {
+                polynomial: |z| z.powi(5) - Complex::new(2., 0.),
+                derivative: |z| Complex::new(5., 0.) * z.powi(4),
+                roots: vec![
+                    (Complex::new(-0.929316, -0.675188), Channel::Red),
+                    // (Complex::new(1.24794, 0.), Channel::Yellow),
+                    (Complex::new(-0.929316, 0.675188), Channel::Green),
+                    (Complex::new(0.354967, -1.09248), Channel::Cyan),
+                    (Complex::new(0.354967, 1.09248), Channel::Blue),
+                    (Complex::new(1.1487, 0.), Channel::Magenta),
+                ],
+            }),
+            // p = z³ - 1 + 1/z
+            Variant::Newton5 => Box::new(Newton {
+                polynomial: |z| z.powi(3) - Complex::new(1., 0.) + 1. / z,
+                derivative: |z| {
+                    (Complex::new(3., 0.) * z.powi(4) - Complex::new(1., 0.)) / z.powi(2)
+                },
+                roots: vec![
+                    (Complex::new(-0.72714, -0.93410), Channel::Red),
+                    (Complex::new(-0.72714, 0.93410), Channel::Cyan),
+                    (Complex::new(0.72714, -0.43001), Channel::Magenta),
+                    (Complex::new(0.72714, 0.43001), Channel::Blue),
+                ],
+            }),
         }
     }
 }

@@ -240,6 +240,38 @@ export default {
         y: 0,
         scale: 1.5
       }
+    },
+    "Newton z⁵ - 2": {
+      "0": {
+        variant: 7,
+        precision: 45,
+        smooth: true,
+        order: 2,
+        const_real: 0.75,
+        const_imaginary: 0.75,
+        lightness: 10
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 1.5
+      }
+    },
+    "Newton z³ - 1 + 1/z": {
+      "0": {
+        variant: 8,
+        precision: 50,
+        smooth: true,
+        order: 2,
+        const_real: 1.0,
+        const_imaginary: 0,
+        lightness: 2.5
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 1.5
+      }
     }
   },
   closed: false,
