@@ -5,6 +5,15 @@ import { memory } from "frustals/frustals_bg";
 import presets from "./presets";
 import "./index.sass";
 
+const defaultFractal = "Newton z⁶ + z³ - 1";
+
+const fractalLabels = {
+  BurningShip: "Burning Ship",
+  Newton: "Newton z³ - 1",
+  Newton2: "Newton z³ - 2z + 2",
+  Newton3: "Newton z⁶ + z³ - 1"
+};
+
 const jsOptions = {
   preview: true,
   previewScale: 10
@@ -263,7 +272,7 @@ mainCanvas.addEventListener(
   },
   false
 );
-const options = frustal.current_options();
+const options = frustal.options;
 
 const sync = debounce(() => {
   frustal.sync_options(options);
@@ -272,9 +281,18 @@ const sync = debounce(() => {
 
 const gui = new GUI({
   load: presets,
-  preset: decodeURIComponent(location.hash.replace(/^#/, "")) || "Newton"
+  preset: decodeURIComponent(location.hash.replace(/^#/, "")) || defaultFractal
 });
-gui.add(options, "variant", Variant).onChange(sync);
+gui
+  .add(
+    options,
+    "variant",
+    Object.entries(Variant).reduce((acc, [name, index]) => {
+      acc[fractalLabels[name] || name] = index;
+      return acc;
+    }, {})
+  )
+  .onChange(sync);
 gui.add(options, "precision", 2).onChange(sync);
 gui.add(options, "smooth").onChange(sync);
 gui.add(options, "order", 1, 15).onChange(sync);
@@ -330,6 +348,7 @@ gui.add(jsOptions, "preview").onChange(() => {
     .getContext("2d")
     .clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 });
+
 gui
   .add(jsOptions, "previewScale")
   .min(1)
@@ -354,14 +373,18 @@ gui.__preset_select.addEventListener("change", ({ target: { value } }) => {
   location.hash = `#${encodeURIComponent(value)}`;
 });
 window.addEventListener("hashchange", event => {
-  gui.preset = decodeURIComponent(location.hash.replace(/^#/, "")) || "Newton";
+  gui.preset =
+    decodeURIComponent(location.hash.replace(/^#/, "")) || defaultFractal;
   gui.revert();
 });
+
 setTimeout(() => {
   started = true;
   render();
 }, 30);
+
 window.frustal = frustal;
+window.Variant = Variant;
 window.Point = Point;
 window.render = render;
 window.updateDomain = updateDomain;

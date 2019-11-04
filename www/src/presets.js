@@ -24,7 +24,7 @@ export default {
         order: 2,
         const_real: 0,
         const_imaginary: 0,
-        lightness: 1.0383573243014395
+        lightness: 1.0
       },
       "1": {
         x: -0.5508,
@@ -48,41 +48,10 @@ export default {
         scale: 1.5
       }
     },
-    Newton: {
-      "0": {
-        variant: 1,
-        precision: 20,
-        smooth: true,
-        order: 2,
-        const_real: 1.0,
-        const_imaginary: 0,
-        lightness: 1.0
-      },
-      "1": {
-        x: 0,
-        y: 0,
-        scale: 1.5
-      }
-    },
-    "Generalized Newton": {
-      "0": {
-        variant: 1,
-        precision: 100,
-        smooth: true,
-        order: 2,
-        const_real: 1.0,
-        const_imaginary: 0.7,
-        lightness: 9.0
-      },
-      "1": {
-        x: 0,
-        y: 0,
-        scale: 8
-      }
-    },
+
     Julia: {
       "0": {
-        variant: 2,
+        variant: 1,
         precision: 2000,
         smooth: true,
         order: 2,
@@ -98,7 +67,7 @@ export default {
     },
     "Julia 1-φ": {
       "0": {
-        variant: 2,
+        variant: 1,
         precision: 20,
         smooth: true,
         order: 2,
@@ -114,7 +83,7 @@ export default {
     },
     "Julia φ−2 + (φ−1)i": {
       "0": {
-        variant: 2,
+        variant: 1,
         precision: 1000,
         smooth: true,
         order: 2,
@@ -130,7 +99,7 @@ export default {
     },
     "Julia (-.835 -.2321i)": {
       "0": {
-        variant: 2,
+        variant: 1,
         precision: 500,
         smooth: true,
         order: 2,
@@ -146,7 +115,7 @@ export default {
     },
     "Julia (-.8i)": {
       "0": {
-        variant: 2,
+        variant: 1,
         precision: 200,
         smooth: true,
         order: 2,
@@ -162,7 +131,7 @@ export default {
     },
     "Julia firework": {
       "0": {
-        variant: 2,
+        variant: 1,
         precision: 3000,
         smooth: true,
         order: 2,
@@ -178,7 +147,7 @@ export default {
     },
     "Burning ships": {
       "0": {
-        variant: 4,
+        variant: 3,
         precision: 250,
         smooth: true,
         order: 2,
@@ -194,7 +163,7 @@ export default {
     },
     "Creepy captain": {
       "0": {
-        variant: 4,
+        variant: 3,
         precision: 500,
         smooth: true,
         order: 2,
@@ -206,6 +175,70 @@ export default {
         x: -1.0303000524781338,
         y: -0.6598474373177842,
         scale: 0.000003
+      }
+    },
+    "Newton z³ - 1": {
+      "0": {
+        variant: 4,
+        precision: 20,
+        smooth: true,
+        order: 2,
+        const_real: 1.0,
+        const_imaginary: 0,
+        lightness: 1.0
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 1.5
+      }
+    },
+    "Generalized Newton": {
+      "0": {
+        variant: 4,
+        precision: 100,
+        smooth: true,
+        order: 2,
+        const_real: 1.0,
+        const_imaginary: 0.7,
+        lightness: 9.0
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 8
+      }
+    },
+    "Newton z³ - 2z + 2": {
+      "0": {
+        variant: 5,
+        precision: 50,
+        smooth: true,
+        order: 2,
+        const_real: 1.0,
+        const_imaginary: 0,
+        lightness: 6.0
+      },
+      "1": {
+        x: -0.5,
+        y: 0,
+        scale: 4
+      }
+    },
+    "Newton z⁶ + z³ - 1": {
+      "0": {
+        variant: 6,
+        precision: 50,
+        smooth: true,
+        order: 2,
+        const_real: 1.0,
+        const_imaginary: 0,
+        lightness: 4.0
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 1.5
       }
     }
   },

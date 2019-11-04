@@ -28,6 +28,7 @@ pub struct DomainOption {
 pub struct Frustal {
     data: Vec<Pixel>,
     preview_data: Vec<Pixel>,
+    pub options: Options,
     domain: Domain,
     fractal: Box<dyn Fractal>,
     preview_resolution: usize,
@@ -36,22 +37,23 @@ pub struct Frustal {
 #[wasm_bindgen]
 impl Frustal {
     pub fn new(width: usize, height: usize, preview_resolution: usize) -> Frustal {
-        let options = Options {
-            variant: Variant::Mandelbrot,
-            smooth: true,
-            precision: 25,
-            order: 2,
-            const_real: 0.0,
-            const_imaginary: 0.0,
-            lightness: 1.0,
-        };
+        let variant = Variant::Mandelbrot;
         Frustal {
             data: (0..width * height).map(|_| Pixel::void()).collect(),
             preview_data: (0..(width * height) / (preview_resolution * preview_resolution))
                 .map(|_| Pixel::void())
                 .collect(),
+            options: Options {
+                variant,
+                smooth: true,
+                precision: 25,
+                order: 2,
+                const_real: 0.0,
+                const_imaginary: 0.0,
+                lightness: 1.0,
+            },
             domain: Domain::new(Point::new(width as f64, height as f64)),
-            fractal: Variant::new(options),
+            fractal: variant.get_fractal(),
             preview_resolution,
         }
     }
@@ -101,7 +103,7 @@ impl Frustal {
 
     pub fn render(&mut self) {
         for (i, point) in self.domain.iter().enumerate() {
-            let pixel = self.fractal.get_pixel_at_point(point);
+            let pixel = self.fractal.get_pixel_at_point(point, &self.options);
             self.data[i].from(pixel);
         }
     }
@@ -119,7 +121,7 @@ impl Frustal {
             {
                 continue;
             }
-            let pixel = self.fractal.get_pixel_at_point(point);
+            let pixel = self.fractal.get_pixel_at_point(point, &self.options);
             self.preview_data[j].from(pixel);
             j += 1;
         }
@@ -130,21 +132,18 @@ impl Frustal {
             if (i + index) % skip != 0 {
                 continue;
             }
-            let pixel = self.fractal.get_pixel_at_point(point);
+            let pixel = self.fractal.get_pixel_at_point(point, &self.options);
             self.data[i].from(pixel);
         }
     }
 
     pub fn sync_options(&mut self, options: &Options) {
-        if self.current_options().variant != options.variant {
-            self.fractal = Variant::new(*options);
-        } else {
-            self.fractal.set_options(*options);
-        }
+        self.options = *options;
+        self.fractal = self.options.variant.get_fractal();
     }
 
     pub fn current_options(&self) -> Options {
-        *self.fractal.options()
+        self.options
     }
 
     pub fn current_domain(&self) -> DomainOption {
