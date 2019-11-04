@@ -6,8 +6,8 @@ export default {
         precision: 25,
         smooth: true,
         order: 2,
-        julia_real: 0,
-        julia_imaginary: 0,
+        const_real: 0,
+        const_imaginary: 0,
         lightness: 1.0
       },
       "1": {
@@ -22,8 +22,8 @@ export default {
         precision: 600,
         smooth: true,
         order: 2,
-        julia_real: 0,
-        julia_imaginary: 0,
+        const_real: 0,
+        const_imaginary: 0,
         lightness: 1.0383573243014395
       },
       "1": {
@@ -38,8 +38,8 @@ export default {
         precision: 25,
         smooth: true,
         order: 3,
-        julia_real: 0,
-        julia_imaginary: 0,
+        const_real: 0,
+        const_imaginary: 0,
         lightness: 1.0
       },
       "1": {
@@ -54,8 +54,8 @@ export default {
         precision: 20,
         smooth: true,
         order: 2,
-        julia_real: 1.0,
-        julia_imaginary: 0,
+        const_real: 1.0,
+        const_imaginary: 0,
         lightness: 1.0
       },
       "1": {
@@ -70,8 +70,8 @@ export default {
         precision: 100,
         smooth: true,
         order: 2,
-        julia_real: 1.0,
-        julia_imaginary: 0.7,
+        const_real: 1.0,
+        const_imaginary: 0.7,
         lightness: 9.0
       },
       "1": {
@@ -86,8 +86,8 @@ export default {
         precision: 2000,
         smooth: true,
         order: 2,
-        julia_real: -0.8,
-        julia_imaginary: 0.156,
+        const_real: -0.8,
+        const_imaginary: 0.156,
         lightness: 5
       },
       "1": {
@@ -102,8 +102,8 @@ export default {
         precision: 20,
         smooth: true,
         order: 2,
-        julia_real: -0.61803398875,
-        julia_imaginary: 0,
+        const_real: -0.61803398875,
+        const_imaginary: 0,
         lightness: 1.5
       },
       "1": {
@@ -118,8 +118,8 @@ export default {
         precision: 1000,
         smooth: true,
         order: 2,
-        julia_real: -0.38196601125,
-        julia_imaginary: 0.61803398875,
+        const_real: -0.38196601125,
+        const_imaginary: 0.61803398875,
         lightness: 5.0
       },
       "1": {
@@ -134,8 +134,8 @@ export default {
         precision: 500,
         smooth: true,
         order: 2,
-        julia_real: -0.835,
-        julia_imaginary: -0.2321,
+        const_real: -0.835,
+        const_imaginary: -0.2321,
         lightness: 7
       },
       "1": {
@@ -150,8 +150,8 @@ export default {
         precision: 200,
         smooth: true,
         order: 2,
-        julia_real: 0,
-        julia_imaginary: -0.8,
+        const_real: 0,
+        const_imaginary: -0.8,
         lightness: 4
       },
       "1": {
@@ -166,8 +166,8 @@ export default {
         precision: 3000,
         smooth: true,
         order: 2,
-        julia_real: -0.39,
-        julia_imaginary: 0.6,
+        const_real: -0.39,
+        const_imaginary: 0.6,
         lightness: 6
       },
       "1": {
@@ -182,8 +182,8 @@ export default {
         precision: 250,
         smooth: true,
         order: 2,
-        julia_real: 0,
-        julia_imaginary: 0,
+        const_real: 0,
+        const_imaginary: 0,
         lightness: 3.5
       },
       "1": {
@@ -198,8 +198,8 @@ export default {
         precision: 500,
         smooth: true,
         order: 2,
-        julia_real: 0,
-        julia_imaginary: 0,
+        const_real: 0,
+        const_imaginary: 0,
         lightness: 1.4970364098221847
       },
       "1": {

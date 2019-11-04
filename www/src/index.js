@@ -279,11 +279,11 @@ gui.add(options, "precision", 2).onChange(sync);
 gui.add(options, "smooth").onChange(sync);
 gui.add(options, "order", 1, 15).onChange(sync);
 gui
-  .add(options, "julia_real", -1.0, 1.0)
+  .add(options, "const_real", -1.0, 1.0)
   .step(0.01)
   .onChange(sync);
 gui
-  .add(options, "julia_imaginary", -1.0, 1.0)
+  .add(options, "const_imaginary", -1.0, 1.0)
   .step(0.01)
   .onChange(sync);
 gui.add(options, "lightness", 0, 10.0).onChange(sync);

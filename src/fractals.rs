@@ -62,8 +62,8 @@ pub struct Options {
     pub smooth: bool,
     pub variant: Variant, // for gui purpose
     pub order: i32,
-    pub julia_real: f64,
-    pub julia_imaginary: f64,
+    pub const_real: f64,
+    pub const_imaginary: f64,
     pub lightness: f64,
 }
 
@@ -188,7 +188,7 @@ impl Fractal for Newton {
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
         let mut z = Complex::new(point.x, point.y);
-        let c = Complex::new(self.options.julia_real, self.options.julia_imaginary);
+        let c = Complex::new(self.options.const_real, self.options.const_imaginary);
 
         let mut iterations = 0;
         let epsilon = 0.00001_f64;
@@ -198,15 +198,18 @@ impl Fractal for Newton {
             (Complex::new(-0.5, -(3_f64).sqrt() / 2_f64), Channel::Blue),
         ];
 
+        let mut last_z;
         while iterations < self.options.precision {
+            last_z = z;
             z -= c * (z.powi(3) - Complex::new(1., 0.)) / (Complex::new(3., 0.) * z.powi(2));
-
             for (root, channel) in roots.iter() {
                 let convergence = (z - root).norm_sqr();
                 if convergence < epsilon {
                     let mut n = iterations as f64;
                     if self.options.smooth {
-                        n -= (-(-(epsilon.sqrt().ln()) * convergence.sqrt()).ln()).ln() / c.norm();
+                        let prev_ln_convergence = (last_z - root).norm_sqr().ln();
+                        n += (epsilon.ln() - prev_ln_convergence)
+                            / (convergence.ln() - prev_ln_convergence);
                     }
                     return Some(Iterations {
                         n,
@@ -256,7 +259,7 @@ impl Fractal for Julia {
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
         let mut z = Complex::new(point.x, point.y);
-        let c = Complex::new(self.options.julia_real, self.options.julia_imaginary);
+        let c = Complex::new(self.options.const_real, self.options.const_imaginary);
         let mut iterations = 0;
 
         while iterations < self.options.precision {
