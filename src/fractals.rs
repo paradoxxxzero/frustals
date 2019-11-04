@@ -17,10 +17,15 @@ pub enum Variant {
 impl Variant {
     pub fn new(options: Options) -> Box<dyn Fractal> {
         match options.variant {
+            // zn+1 = zn^d + c
             Variant::Mandelbrot => Box::new(Mandelbrot::new(options)),
+            // zn+1 = zn - p(zn) / p'(zn)
             Variant::Newton => Box::new(Newton::new(options)),
+            // zn+1 = zn^d + c
             Variant::Julia => Box::new(Julia::new(options)),
+            // zn+1 = conj(zn)^d + c
             Variant::Mandelbar => Box::new(Mandelbar::new(options)),
+            // zn+1 = (abs(Re(zn)) + abs(Im(zn)))^d + c
             Variant::BurningShip => Box::new(BurningShip::new(options)),
         }
     }
@@ -183,9 +188,10 @@ impl Fractal for Newton {
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
         let mut z = Complex::new(point.x, point.y);
+        let c = Complex::new(self.options.julia_real, self.options.julia_imaginary);
 
         let mut iterations = 0;
-        let epsilon = 0.0001_f64;
+        let epsilon = 0.00001_f64;
         let roots = [
             (Complex::new(1., 0.), Channel::Red),
             (Complex::new(-0.5, (3_f64).sqrt() / 2_f64), Channel::Green),
@@ -193,14 +199,14 @@ impl Fractal for Newton {
         ];
 
         while iterations < self.options.precision {
-            z -= (z.powi(3) - Complex::new(1., 0.)) / (Complex::new(3., 0.) * z.powi(2));
+            z -= c * (z.powi(3) - Complex::new(1., 0.)) / (Complex::new(3., 0.) * z.powi(2));
 
             for (root, channel) in roots.iter() {
                 let convergence = (z - root).norm_sqr();
                 if convergence < epsilon {
                     let mut n = iterations as f64;
                     if self.options.smooth {
-                        n -= (1. / (50. * convergence)).ln().ln()
+                        n -= (-(-(epsilon.sqrt().ln()) * convergence.sqrt()).ln()).ln() / c.norm();
                     }
                     return Some(Iterations {
                         n,
@@ -250,7 +256,6 @@ impl Fractal for Julia {
 
     fn get_iterations_at_point(&self, point: Point) -> IterationsMaybe {
         let mut z = Complex::new(point.x, point.y);
-        // let c = Complex::new(0.3, 0.5);
         let c = Complex::new(self.options.julia_real, self.options.julia_imaginary);
         let mut iterations = 0;
 

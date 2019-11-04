@@ -6,8 +6,8 @@ export default {
         precision: 25,
         smooth: true,
         order: 2,
-        julia_real: -0.8,
-        julia_imaginary: 0.156,
+        julia_real: 0,
+        julia_imaginary: 0,
         lightness: 1.0
       },
       "1": {
@@ -22,8 +22,8 @@ export default {
         precision: 600,
         smooth: true,
         order: 2,
-        julia_real: -0.8,
-        julia_imaginary: 0.156,
+        julia_real: 0,
+        julia_imaginary: 0,
         lightness: 1.0383573243014395
       },
       "1": {
@@ -38,8 +38,8 @@ export default {
         precision: 25,
         smooth: true,
         order: 3,
-        julia_real: -0.8,
-        julia_imaginary: 0.156,
+        julia_real: 0,
+        julia_imaginary: 0,
         lightness: 1.0
       },
       "1": {
@@ -54,14 +54,30 @@ export default {
         precision: 20,
         smooth: true,
         order: 2,
-        julia_real: -0.8,
-        julia_imaginary: 0.156,
+        julia_real: 1.0,
+        julia_imaginary: 0,
         lightness: 1.0
       },
       "1": {
         x: 0,
         y: 0,
         scale: 1.5
+      }
+    },
+    "Generalized Newton": {
+      "0": {
+        variant: 1,
+        precision: 100,
+        smooth: true,
+        order: 2,
+        julia_real: 1.0,
+        julia_imaginary: 0.7,
+        lightness: 9.0
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 8
       }
     },
     Julia: {
@@ -166,8 +182,8 @@ export default {
         precision: 250,
         smooth: true,
         order: 2,
-        julia_real: -0.8,
-        julia_imaginary: 0.156,
+        julia_real: 0,
+        julia_imaginary: 0,
         lightness: 3.5
       },
       "1": {
@@ -182,8 +198,8 @@ export default {
         precision: 500,
         smooth: true,
         order: 2,
-        julia_real: -0.31041490262489413,
-        julia_imaginary: 0.156,
+        julia_real: 0,
+        julia_imaginary: 0,
         lightness: 1.4970364098221847
       },
       "1": {

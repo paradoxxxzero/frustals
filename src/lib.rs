@@ -41,8 +41,8 @@ impl Frustal {
             smooth: true,
             precision: 25,
             order: 2,
-            julia_real: -0.8,
-            julia_imaginary: 0.156,
+            julia_real: 0.0,
+            julia_imaginary: 0.0,
             lightness: 1.0,
         };
         Frustal {
