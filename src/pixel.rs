@@ -1,3 +1,4 @@
+use color_processing::Color;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -18,6 +19,15 @@ impl Pixel {
             r: 0f64.max(r).min(255f64).round() as u8,
             g: 0f64.max(g).min(255f64).round() as u8,
             b: 0f64.max(b).min(255f64).round() as u8,
+            a: 255,
+        }
+    }
+
+    pub fn from_color(color: Color) -> Pixel {
+        Pixel {
+            r: color.red,
+            g: color.green,
+            b: color.blue,
             a: 255,
         }
     }

@@ -5,7 +5,7 @@ mod point;
 use wasm_bindgen::prelude::*;
 
 pub use crate::domain::Domain;
-pub use crate::fractals::{Fractal, Options, Variant};
+pub use crate::fractals::{Colorization, Fractal, Options, Variant};
 pub use crate::pixel::Pixel;
 pub use crate::point::Point;
 
@@ -51,6 +51,7 @@ impl Frustal {
                 const_real: 0.0,
                 const_imaginary: 0.0,
                 lightness: 1.0,
+                colorization: Colorization::AbsoluteLogHSL,
             },
             domain: Domain::new(Point::new(width as f64, height as f64)),
             fractal: variant.get_fractal(),

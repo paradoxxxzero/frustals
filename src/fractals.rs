@@ -1,3 +1,4 @@
+use color_processing::Color;
 use wasm_bindgen::prelude::*;
 
 use crate::pixel::Pixel;
@@ -70,7 +71,6 @@ impl Variant {
                 derivative: |z| Complex::new(5., 0.) * z.powi(4),
                 roots: vec![
                     (Complex::new(-0.929316, -0.675188), Channel::Red),
-                    // (Complex::new(1.24794, 0.), Channel::Yellow),
                     (Complex::new(-0.929316, 0.675188), Channel::Green),
                     (Complex::new(0.354967, -1.09248), Channel::Cyan),
                     (Complex::new(0.354967, 1.09248), Channel::Blue),
@@ -123,6 +123,15 @@ pub type IterationsMaybe = Option<Iterations>;
 
 #[wasm_bindgen]
 #[derive(Clone, Copy, PartialEq)]
+pub enum Colorization {
+    Relative,
+    RelativeBnW,
+    AbsoluteHSL,
+    AbsoluteLogHSL,
+}
+
+#[wasm_bindgen]
+#[derive(Clone, Copy, PartialEq)]
 pub struct Options {
     pub precision: usize,
     pub smooth: bool,
@@ -131,6 +140,7 @@ pub struct Options {
     pub const_real: f64,
     pub const_imaginary: f64,
     pub lightness: f64,
+    pub colorization: Colorization,
 }
 
 pub trait Fractal {
@@ -138,20 +148,92 @@ pub trait Fractal {
 
     fn get_pixel_for_iteration(&self, iterations: IterationsMaybe, options: &Options) -> Pixel {
         if let Some(Iterations { n, channel }) = iterations {
-            // Expanding normalized iterations on the rgb spectrum:
-            let sn = if let Channel::All = channel {
-                3. * 255. * n / (options.precision as f64) * options.lightness
-            } else {
-                255. - n * (options.precision as f64) / options.lightness
-            };
-            match channel {
-                Channel::Red => Pixel::from_f64(sn, 0., 0.),
-                Channel::Green => Pixel::from_f64(0., sn, 0.),
-                Channel::Blue => Pixel::from_f64(0., 0., sn),
-                Channel::Cyan => Pixel::from_f64(0., sn, sn),
-                Channel::Magenta => Pixel::from_f64(sn, 0., sn),
-                Channel::Yellow => Pixel::from_f64(sn, sn, 0.),
-                Channel::All => Pixel::from_f64(sn, sn - 255., sn - 2. * 255.),
+            match options.colorization {
+                Colorization::Relative => {
+                    // Expanding normalized iterations on the rgb spectrum:
+                    let sn = if let Channel::All = channel {
+                        3. * 255. * n / (options.precision as f64) * options.lightness
+                    } else {
+                        255. * (1. - (n / (options.precision as f64))) * options.lightness
+                    };
+                    match channel {
+                        Channel::Red => Pixel::from_f64(sn, 0., 0.),
+                        Channel::Yellow => Pixel::from_f64(sn, sn, 0.),
+                        Channel::Green => Pixel::from_f64(0., sn, 0.),
+                        Channel::Cyan => Pixel::from_f64(0., sn, sn),
+                        Channel::Blue => Pixel::from_f64(0., 0., sn),
+                        Channel::Magenta => Pixel::from_f64(sn, 0., sn),
+                        Channel::All => Pixel::from_f64(sn, sn - 255., sn - 2. * 255.),
+                    }
+                }
+                Colorization::RelativeBnW => {
+                    // Expanding normalized iterations on the rgb spectrum:
+                    let channel_inc = 255. / 6.;
+                    let sn = if let Channel::All = channel {
+                        255. * n / (options.precision as f64) * options.lightness
+                    } else {
+                        channel_inc * (1. - (n / (options.precision as f64))) * options.lightness
+                    };
+
+                    let channel_delta = match channel {
+                        Channel::Red => 0.,
+                        Channel::Yellow => channel_inc,
+                        Channel::Green => channel_inc * 2.,
+                        Channel::Cyan => channel_inc * 3.,
+                        Channel::Blue => channel_inc * 4.,
+                        Channel::Magenta => channel_inc * 5.,
+                        Channel::All => 0.,
+                    };
+                    Pixel::from_f64(sn + channel_delta, sn + channel_delta, sn + channel_delta)
+                }
+                Colorization::AbsoluteHSL => {
+                    let initial_hue = match channel {
+                        Channel::Red => 0.,
+                        Channel::Yellow => 60.,
+                        Channel::Green => 120.,
+                        Channel::Cyan => 180.,
+                        Channel::Blue => 240.,
+                        Channel::Magenta => 300.,
+                        Channel::All => 0.,
+                    };
+                    if n > (options.lightness * 10.) {
+                        Pixel::from_color(Color::new_hsl(
+                            initial_hue + (n - (options.lightness * 10.)),
+                            1.0,
+                            0.5,
+                        ))
+                    } else {
+                        Pixel::from_color(Color::new_hsl(
+                            initial_hue,
+                            1.0,
+                            0.5 * n / (options.lightness * 10.),
+                        ))
+                    }
+                }
+                Colorization::AbsoluteLogHSL => {
+                    let initial_hue = match channel {
+                        Channel::Red => 0.,
+                        Channel::Yellow => 60.,
+                        Channel::Green => 120.,
+                        Channel::Cyan => 180.,
+                        Channel::Blue => 240.,
+                        Channel::Magenta => 300.,
+                        Channel::All => 0.,
+                    };
+                    if n > (options.lightness * 10.) {
+                        Pixel::from_color(Color::new_hsl(
+                            initial_hue + (1. + n - (options.lightness * 10.)).ln() * 10.,
+                            1.0,
+                            0.5,
+                        ))
+                    } else {
+                        Pixel::from_color(Color::new_hsl(
+                            initial_hue,
+                            1.0,
+                            0.5 * n / (options.lightness * 10.),
+                        ))
+                    }
+                }
             }
         } else {
             Pixel::black()

@@ -1,6 +1,7 @@
 import { GUI } from "dat.gui";
 import debounce from "debounce";
-import { Frustal, Variant, Point } from "frustals";
+import { Frustal, Variant, Point, Colorization } from "frustals";
+
 import { memory } from "frustals/frustals_bg";
 import presets from "./presets";
 import "./index.sass";
@@ -306,6 +307,7 @@ gui
   .add(options, "const_imaginary", -1.0, 1.0)
   .step(0.01)
   .onChange(sync);
+gui.add(options, "colorization", Colorization).onChange(sync);
 gui.add(options, "lightness", 0, 10.0).onChange(sync);
 
 const { origin, scale } = frustal.current_domain();

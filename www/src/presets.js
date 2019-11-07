@@ -151,7 +151,7 @@ export default {
         precision: 250,
         smooth: true,
         order: 2,
-        const_real: 0,
+        const_real: 1,
         const_imaginary: 0,
         lightness: 3.5
       },
@@ -167,7 +167,7 @@ export default {
         precision: 500,
         smooth: true,
         order: 2,
-        const_real: 0,
+        const_real: 1,
         const_imaginary: 0,
         lightness: 1.4970364098221847
       },
