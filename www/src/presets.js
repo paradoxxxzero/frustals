@@ -253,6 +253,27 @@ export default {
         scale: 1.5
       }
     },
+    "Newton z³ - 1 boundary": {
+      "0": {
+        variant: 4,
+        precision: 100,
+        smooth: true,
+        order: 2,
+        const_real: 1.0,
+        const_imaginary: 0,
+        colorization: 1,
+        black_threshold: 200,
+        white_threshold: 1,
+        overexposure: 10,
+        color_base: 0,
+        color_rotation: 0
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 1.5
+      }
+    },
     "Generalized Newton": {
       "0": {
         variant: 4,
