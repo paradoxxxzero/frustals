@@ -308,7 +308,20 @@ gui
   .step(0.01)
   .onChange(sync);
 gui.add(options, "colorization", Colorization).onChange(sync);
-gui.add(options, "lightness", 0, 10.0).onChange(sync);
+gui
+  .add(options, "black_threshold")
+  .step(0.000001)
+  .onChange(sync);
+gui
+  .add(options, "white_threshold")
+  .step(0.000001)
+  .onChange(sync);
+gui
+  .add(options, "overexposure")
+  .step(0.000001)
+  .onChange(sync);
+gui.add(options, "color_base").onChange(sync);
+gui.add(options, "color_rotation").onChange(sync);
 
 const { origin, scale } = frustal.current_domain();
 const view = {

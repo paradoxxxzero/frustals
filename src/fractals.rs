@@ -37,9 +37,9 @@ impl Variant {
                 polynomial: |z| z.powi(3) - Complex::new(1., 0.),
                 derivative: |z| Complex::new(3., 0.) * z.powi(2),
                 roots: vec![
-                    (Complex::new(1., 0.), Channel::Red),
-                    (Complex::new(-0.5, (3_f64).sqrt() / 2_f64), Channel::Green),
-                    (Complex::new(-0.5, -(3_f64).sqrt() / 2_f64), Channel::Blue),
+                    Complex::new(1., 0.),
+                    Complex::new(-0.5, (3_f64).sqrt() / 2_f64),
+                    Complex::new(-0.5, -(3_f64).sqrt() / 2_f64),
                 ],
             }),
             // p = z³ - 2z + 2
@@ -47,9 +47,9 @@ impl Variant {
                 polynomial: |z| z.powi(3) - Complex::new(2., 0.) * z + Complex::new(2., 0.),
                 derivative: |z| Complex::new(3., 0.) * z.powi(2) - Complex::new(4., 0.),
                 roots: vec![
-                    (Complex::new(-1.7693, 0.), Channel::Cyan),
-                    (Complex::new(0.88465, -0.58974), Channel::Yellow),
-                    (Complex::new(0.88465, 0.58974), Channel::Magenta),
+                    Complex::new(-1.7693, 0.),
+                    Complex::new(0.88465, -0.58974),
+                    Complex::new(0.88465, 0.58974),
                 ],
             }),
             // p = z⁶ + z³ - 1
@@ -57,12 +57,12 @@ impl Variant {
                 polynomial: |z| z.powi(6) + z.powi(3) - Complex::new(1., 0.),
                 derivative: |z| Complex::new(6., 0.) * z.powi(5) + Complex::new(3., 0.) * z.powi(2),
                 roots: vec![
-                    (Complex::new(0.58699, 1.01670), Channel::Red),
-                    (Complex::new(0.85180, 0.0), Channel::Yellow),
-                    (Complex::new(0.58699, -1.01670), Channel::Green),
-                    (Complex::new(-0.42590, -0.73768), Channel::Cyan),
-                    (Complex::new(-1.1740, 0.0), Channel::Blue),
-                    (Complex::new(-0.42590, 0.73768), Channel::Magenta),
+                    Complex::new(0.58699, 1.01670),
+                    Complex::new(0.85180, 0.0),
+                    Complex::new(0.58699, -1.01670),
+                    Complex::new(-0.42590, -0.73768),
+                    Complex::new(-1.1740, 0.0),
+                    Complex::new(-0.42590, 0.73768),
                 ],
             }),
             // p = z⁵ - 2
@@ -70,11 +70,11 @@ impl Variant {
                 polynomial: |z| z.powi(5) - Complex::new(2., 0.),
                 derivative: |z| Complex::new(5., 0.) * z.powi(4),
                 roots: vec![
-                    (Complex::new(-0.929316, -0.675188), Channel::Red),
-                    (Complex::new(-0.929316, 0.675188), Channel::Green),
-                    (Complex::new(0.354967, -1.09248), Channel::Cyan),
-                    (Complex::new(0.354967, 1.09248), Channel::Blue),
-                    (Complex::new(1.1487, 0.), Channel::Magenta),
+                    Complex::new(-0.929316, -0.675188),
+                    Complex::new(-0.929316, 0.675188),
+                    Complex::new(0.354967, -1.09248),
+                    Complex::new(0.354967, 1.09248),
+                    Complex::new(1.1487, 0.),
                 ],
             }),
             // p = z³ - 1 + 1/z
@@ -84,37 +84,28 @@ impl Variant {
                     (Complex::new(3., 0.) * z.powi(4) - Complex::new(1., 0.)) / z.powi(2)
                 },
                 roots: vec![
-                    (Complex::new(-0.72714, -0.93410), Channel::Red),
-                    (Complex::new(-0.72714, 0.93410), Channel::Cyan),
-                    (Complex::new(0.72714, -0.43001), Channel::Magenta),
-                    (Complex::new(0.72714, 0.43001), Channel::Blue),
+                    Complex::new(-0.72714, -0.93410),
+                    Complex::new(-0.72714, 0.93410),
+                    Complex::new(0.72714, -0.43001),
+                    Complex::new(0.72714, 0.43001),
                 ],
             }),
         }
     }
 }
 
-#[derive(Clone, Copy, PartialEq)]
-enum Channel {
-    Red,
-    Green,
-    Blue,
-    Cyan,
-    Magenta,
-    Yellow,
-    All,
-}
-
 pub struct Iterations {
     n: f64,
-    channel: Channel,
+    channel: usize,
+    channels: usize,
 }
 
 impl Iterations {
     fn all(n: f64) -> Iterations {
         Iterations {
             n,
-            channel: Channel::All,
+            channel: 0,
+            channels: 1,
         }
     }
 }
@@ -125,9 +116,7 @@ pub type IterationsMaybe = Option<Iterations>;
 #[derive(Clone, Copy, PartialEq)]
 pub enum Colorization {
     Relative,
-    RelativeBnW,
-    AbsoluteHSL,
-    AbsoluteLogHSL,
+    Absolute,
 }
 
 #[wasm_bindgen]
@@ -139,100 +128,92 @@ pub struct Options {
     pub order: i32,
     pub const_real: f64,
     pub const_imaginary: f64,
-    pub lightness: f64,
     pub colorization: Colorization,
+    pub black_threshold: f64,
+    pub white_threshold: f64,
+    pub overexposure: f64,
+    pub color_rotation: f64,
+    pub color_base: f64,
 }
 
 pub trait Fractal {
     fn get_iterations_at_point(&self, point: Point, options: &Options) -> IterationsMaybe;
 
     fn get_pixel_for_iteration(&self, iterations: IterationsMaybe, options: &Options) -> Pixel {
-        if let Some(Iterations { n, channel }) = iterations {
+        if let Some(Iterations {
+            n,
+            channel,
+            channels,
+        }) = iterations
+        {
+            let channel_hue = options.color_base + channel as f64 * 360. / channels as f64;
             match options.colorization {
                 Colorization::Relative => {
-                    // Expanding normalized iterations on the rgb spectrum:
-                    let sn = if let Channel::All = channel {
-                        3. * 255. * n / (options.precision as f64) * options.lightness
-                    } else {
-                        255. * (1. - (n / (options.precision as f64))) * options.lightness
-                    };
-                    match channel {
-                        Channel::Red => Pixel::from_f64(sn, 0., 0.),
-                        Channel::Yellow => Pixel::from_f64(sn, sn, 0.),
-                        Channel::Green => Pixel::from_f64(0., sn, 0.),
-                        Channel::Cyan => Pixel::from_f64(0., sn, sn),
-                        Channel::Blue => Pixel::from_f64(0., 0., sn),
-                        Channel::Magenta => Pixel::from_f64(sn, 0., sn),
-                        Channel::All => Pixel::from_f64(sn, sn - 255., sn - 2. * 255.),
-                    }
-                }
-                Colorization::RelativeBnW => {
-                    // Expanding normalized iterations on the rgb spectrum:
-                    let channel_inc = 255. / 6.;
-                    let sn = if let Channel::All = channel {
-                        255. * n / (options.precision as f64) * options.lightness
-                    } else {
-                        channel_inc * (1. - (n / (options.precision as f64))) * options.lightness
+                    let (black_threshold, white_threshold) =
+                        if options.black_threshold <= options.white_threshold {
+                            (options.black_threshold, options.white_threshold)
+                        } else {
+                            (
+                                (1. - options.black_threshold),
+                                (1. - options.white_threshold),
+                            )
+                        };
+                    let mut convergence = (n * options.overexposure) / (options.precision as f64);
+                    if options.black_threshold > options.white_threshold {
+                        convergence = 1. - convergence;
                     };
 
-                    let channel_delta = match channel {
-                        Channel::Red => 0.,
-                        Channel::Yellow => channel_inc,
-                        Channel::Green => channel_inc * 2.,
-                        Channel::Cyan => channel_inc * 3.,
-                        Channel::Blue => channel_inc * 4.,
-                        Channel::Magenta => channel_inc * 5.,
-                        Channel::All => 0.,
-                    };
-                    Pixel::from_f64(sn + channel_delta, sn + channel_delta, sn + channel_delta)
-                }
-                Colorization::AbsoluteHSL => {
-                    let initial_hue = match channel {
-                        Channel::Red => 0.,
-                        Channel::Yellow => 60.,
-                        Channel::Green => 120.,
-                        Channel::Cyan => 180.,
-                        Channel::Blue => 240.,
-                        Channel::Magenta => 300.,
-                        Channel::All => 0.,
-                    };
-                    if n > (options.lightness * 10.) {
-                        Pixel::from_color(Color::new_hsl(
-                            initial_hue + (n - (options.lightness * 10.)),
-                            1.0,
-                            0.5,
-                        ))
+                    let w = if white_threshold - 0. > 0.00001 && convergence > white_threshold {
+                        (convergence - white_threshold) / (1. - white_threshold)
                     } else {
-                        Pixel::from_color(Color::new_hsl(
-                            initial_hue,
-                            1.0,
-                            0.5 * n / (options.lightness * 10.),
-                        ))
-                    }
-                }
-                Colorization::AbsoluteLogHSL => {
-                    let initial_hue = match channel {
-                        Channel::Red => 0.,
-                        Channel::Yellow => 60.,
-                        Channel::Green => 120.,
-                        Channel::Cyan => 180.,
-                        Channel::Blue => 240.,
-                        Channel::Magenta => 300.,
-                        Channel::All => 0.,
+                        0.
                     };
-                    if n > (options.lightness * 10.) {
-                        Pixel::from_color(Color::new_hsl(
-                            initial_hue + (1. + n - (options.lightness * 10.)).ln() * 10.,
-                            1.0,
-                            0.5,
-                        ))
+                    let b = if black_threshold - 0. > 0.00001 && convergence < black_threshold {
+                        1. - (convergence / black_threshold)
                     } else {
-                        Pixel::from_color(Color::new_hsl(
-                            initial_hue,
-                            1.0,
-                            0.5 * n / (options.lightness * 10.),
-                        ))
-                    }
+                        0.
+                    };
+
+                    let h = channel_hue
+                        + if convergence >= black_threshold && convergence <= white_threshold {
+                            options.color_rotation * (convergence - black_threshold)
+                                / (white_threshold - black_threshold)
+                        } else if convergence > white_threshold {
+                            options.color_rotation
+                        } else {
+                            0.
+                        };
+
+                    Pixel::from_color(Color::new_hwb(h, w, b))
+                }
+                Colorization::Absolute => {
+                    let (black_threshold, white_threshold) =
+                        // if options.black_threshold <= options.white_threshold {
+                            (options.black_threshold, options.white_threshold);
+                    // };
+                    let convergence = n * options.overexposure;
+
+                    let w = if convergence > white_threshold {
+                        (convergence - white_threshold) / white_threshold
+                    } else {
+                        0.
+                    };
+                    let b = if convergence < black_threshold {
+                        1. - (convergence / black_threshold)
+                    } else {
+                        0.
+                    };
+
+                    let h = channel_hue
+                        + if convergence >= black_threshold && convergence <= white_threshold {
+                            options.color_rotation * (convergence - black_threshold)
+                        } else if convergence > white_threshold {
+                            options.color_rotation * (convergence - black_threshold)
+                        } else {
+                            0.
+                        };
+
+                    Pixel::from_color(Color::new_hwb(h, w, b))
                 }
             }
         } else {
@@ -296,7 +277,7 @@ impl Fractal for Mandelbrot {
 pub struct Newton {
     polynomial: fn(Complex) -> Complex,
     derivative: fn(Complex) -> Complex,
-    roots: Vec<(Complex, Channel)>,
+    roots: Vec<Complex>,
 }
 
 impl Fractal for Newton {
@@ -311,7 +292,7 @@ impl Fractal for Newton {
         while iterations < options.precision {
             last_z = z;
             z -= c * (self.polynomial)(z) / (self.derivative)(z);
-            for (root, channel) in self.roots.iter() {
+            for (i, root) in self.roots.iter().enumerate() {
                 let convergence = (z - root).norm_sqr();
                 if convergence < epsilon {
                     let mut n = iterations as f64;
@@ -322,7 +303,8 @@ impl Fractal for Newton {
                     }
                     return Some(Iterations {
                         n,
-                        channel: *channel,
+                        channel: i + 1,
+                        channels: self.roots.len(),
                     });
                 }
             }

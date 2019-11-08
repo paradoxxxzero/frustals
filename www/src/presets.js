@@ -3,12 +3,17 @@ export default {
     Mandelbrot: {
       "0": {
         variant: 0,
-        precision: 25,
+        precision: 200,
         smooth: true,
         order: 2,
         const_real: 0,
         const_imaginary: 0,
-        lightness: 1.0
+        colorization: 1,
+        black_threshold: 35,
+        white_threshold: 100,
+        overexposure: 1,
+        color_base: 0,
+        color_rotation: 0.5
       },
       "1": {
         x: -0.75,
@@ -24,7 +29,12 @@ export default {
         order: 2,
         const_real: 0,
         const_imaginary: 0,
-        lightness: 1.0
+        colorization: 1,
+        black_threshold: 300,
+        white_threshold: 400,
+        overexposure: 2,
+        color_base: 240,
+        color_rotation: -0.1
       },
       "1": {
         x: -0.5508,
@@ -35,12 +45,17 @@ export default {
     "Multibrot 3": {
       "0": {
         variant: 0,
-        precision: 25,
+        precision: 300,
         smooth: true,
         order: 3,
         const_real: 0,
         const_imaginary: 0,
-        lightness: 1.0
+        colorization: 1,
+        black_threshold: 15,
+        white_threshold: 10000,
+        overexposure: 1,
+        color_base: 30,
+        color_rotation: 0.2
       },
       "1": {
         x: 0,
@@ -57,7 +72,12 @@ export default {
         order: 2,
         const_real: -0.8,
         const_imaginary: 0.156,
-        lightness: 5
+        colorization: 1,
+        black_threshold: 175,
+        white_threshold: 2000,
+        overexposure: 1,
+        color_base: 0,
+        color_rotation: 0.35
       },
       "1": {
         x: 0,
@@ -68,12 +88,17 @@ export default {
     "Julia 1-φ": {
       "0": {
         variant: 1,
-        precision: 20,
+        precision: 100,
         smooth: true,
         order: 2,
         const_real: -0.61803398875,
         const_imaginary: 0,
-        lightness: 1.5
+        colorization: 1,
+        black_threshold: 8,
+        white_threshold: 20,
+        overexposure: 1,
+        color_base: 0,
+        color_rotation: 20
       },
       "1": {
         x: 0,
@@ -89,7 +114,12 @@ export default {
         order: 2,
         const_real: -0.38196601125,
         const_imaginary: 0.61803398875,
-        lightness: 5.0
+        colorization: 1,
+        black_threshold: 50,
+        white_threshold: 100,
+        overexposure: 1,
+        color_base: 0,
+        color_rotation: 0.4
       },
       "1": {
         x: 0,
@@ -105,7 +135,12 @@ export default {
         order: 2,
         const_real: -0.835,
         const_imaginary: -0.2321,
-        lightness: 7
+        colorization: 1,
+        black_threshold: 70,
+        white_threshold: 500,
+        overexposure: 1,
+        color_base: 300,
+        color_rotation: 0
       },
       "1": {
         x: 0,
@@ -121,7 +156,12 @@ export default {
         order: 2,
         const_real: 0,
         const_imaginary: -0.8,
-        lightness: 4
+        colorization: 1,
+        black_threshold: 40,
+        white_threshold: 500,
+        overexposure: 1,
+        color_base: 60,
+        color_rotation: 0
       },
       "1": {
         x: 0,
@@ -137,7 +177,12 @@ export default {
         order: 2,
         const_real: -0.39,
         const_imaginary: 0.6,
-        lightness: 6
+        colorization: 0,
+        black_threshold: 0.4,
+        white_threshold: 0.6,
+        overexposure: 6,
+        color_base: 0,
+        color_rotation: 60
       },
       "1": {
         x: -0.38,
@@ -153,7 +198,12 @@ export default {
         order: 2,
         const_real: 1,
         const_imaginary: 0,
-        lightness: 3.5
+        colorization: 1,
+        black_threshold: 100,
+        white_threshold: 250,
+        overexposure: 3,
+        color_base: 0,
+        color_rotation: 0.3
       },
       "1": {
         x: -1.623553916544455,
@@ -169,7 +219,12 @@ export default {
         order: 2,
         const_real: 1,
         const_imaginary: 0,
-        lightness: 1.4970364098221847
+        colorization: 1,
+        black_threshold: 100,
+        white_threshold: 500,
+        overexposure: 1,
+        color_base: 0,
+        color_rotation: 0
       },
       "1": {
         x: -1.0303000524781338,
@@ -180,12 +235,17 @@ export default {
     "Newton z³ - 1": {
       "0": {
         variant: 4,
-        precision: 20,
+        precision: 100,
         smooth: true,
         order: 2,
         const_real: 1.0,
         const_imaginary: 0,
-        lightness: 1.0
+        colorization: 0,
+        black_threshold: 0.1,
+        white_threshold: -0.0001,
+        overexposure: 6,
+        color_base: 0,
+        color_rotation: 0
       },
       "1": {
         x: 0,
@@ -201,7 +261,12 @@ export default {
         order: 2,
         const_real: 1.0,
         const_imaginary: 0.7,
-        lightness: 9.0
+        colorization: 0,
+        black_threshold: 0.1,
+        white_threshold: -0.0001,
+        overexposure: 3,
+        color_base: 0,
+        color_rotation: 0
       },
       "1": {
         x: 0,
@@ -212,12 +277,17 @@ export default {
     "Newton z³ - 2z + 2": {
       "0": {
         variant: 5,
-        precision: 50,
+        precision: 100,
         smooth: true,
         order: 2,
         const_real: 1.0,
         const_imaginary: 0,
-        lightness: 6.0
+        colorization: 0,
+        black_threshold: 0.2,
+        white_threshold: -0.0001,
+        overexposure: 4,
+        color_base: 180,
+        color_rotation: 0
       },
       "1": {
         x: -0.5,
@@ -228,12 +298,17 @@ export default {
     "Newton z⁶ + z³ - 1": {
       "0": {
         variant: 6,
-        precision: 50,
+        precision: 100,
         smooth: true,
         order: 2,
         const_real: 1.0,
         const_imaginary: 0,
-        lightness: 4.0
+        colorization: 0,
+        black_threshold: 0.1,
+        white_threshold: -0.0001,
+        overexposure: 4,
+        color_base: 60,
+        color_rotation: 0
       },
       "1": {
         x: 0,
@@ -244,12 +319,17 @@ export default {
     "Newton z⁵ - 2": {
       "0": {
         variant: 7,
-        precision: 45,
+        precision: 100,
         smooth: true,
         order: 2,
         const_real: 0.75,
         const_imaginary: 0.75,
-        lightness: 10
+        colorization: 0,
+        black_threshold: 0.1,
+        white_threshold: -0.0001,
+        overexposure: 1.5,
+        color_base: 120,
+        color_rotation: 0
       },
       "1": {
         x: 0,
@@ -260,12 +340,17 @@ export default {
     "Newton z³ - 1 + 1/z": {
       "0": {
         variant: 8,
-        precision: 50,
+        precision: 100,
         smooth: true,
         order: 2,
         const_real: 1.0,
         const_imaginary: 0,
-        lightness: 2.5
+        colorization: 0,
+        black_threshold: 0.05,
+        white_threshold: -0.0001,
+        overexposure: 8,
+        color_base: 120,
+        color_rotation: 0
       },
       "1": {
         x: 0,
