@@ -378,6 +378,48 @@ export default {
         y: 0,
         scale: 1.5
       }
+    },
+    "Newton z⁹ - 1": {
+      "0": {
+        variant: 9,
+        precision: 200,
+        smooth: true,
+        order: 2,
+        const_real: 1.0,
+        const_imaginary: 0,
+        colorization: 0,
+        black_threshold: 0.1,
+        white_threshold: -0.0001,
+        overexposure: 6,
+        color_base: 0,
+        color_rotation: 0
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 1.5
+      }
+    },
+    "Newton 1/z⁶ + 8 / z³ - 1": {
+      "0": {
+        variant: 10,
+        precision: 200,
+        smooth: true,
+        order: 2,
+        const_real: 1.0,
+        const_imaginary: 0,
+        colorization: 0,
+        black_threshold: 0.1,
+        white_threshold: -0.0001,
+        overexposure: 8,
+        color_base: 0,
+        color_rotation: 0
+      },
+      "1": {
+        x: 0,
+        y: 0,
+        scale: 1
+      }
     }
   },
   closed: false,

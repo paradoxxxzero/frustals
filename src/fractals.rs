@@ -17,6 +17,8 @@ pub enum Variant {
     Newton3,
     Newton4,
     Newton5,
+    Newton6,
+    Newton7,
 }
 
 impl Variant {
@@ -88,6 +90,41 @@ impl Variant {
                     Complex::new(-0.72714, 0.93410),
                     Complex::new(0.72714, -0.43001),
                     Complex::new(0.72714, 0.43001),
+                ],
+            }),
+            // p = z⁹ - 1
+            Variant::Newton6 => Box::new(Newton {
+                polynomial: |z| z.powi(9) - Complex::new(1., 0.),
+                derivative: |z| Complex::new(9., 0.) * z.powi(8),
+                roots: vec![
+                    Complex::new(1., 0.),
+                    Complex::new(-0.93969, -0.34202),
+                    Complex::new(0.76604, 0.64279),
+                    Complex::new(-0.50000, -0.86603),
+                    Complex::new(0.17365, 0.98481),
+                    Complex::new(0.17365, -0.98481),
+                    Complex::new(-0.50000, 0.86603),
+                    Complex::new(0.76604, -0.64279),
+                    Complex::new(-0.93969, 0.34202),
+                ],
+            }),
+            // p = 1/z⁶ + 8 / z³ - 1
+            Variant::Newton7 => Box::new(Newton {
+                polynomial: |z| {
+                    z.powi(-6) + Complex::new(8., 0.) * z.powi(-3) - Complex::new(1., 0.)
+                },
+                derivative: |z| {
+                    -(Complex::new(6., 0.)
+                        * (Complex::new(4., 0.) * z.powi(3) + Complex::new(1., 0.))
+                        * z.powi(-7))
+                },
+                roots: vec![
+                    Complex::new(-1.0051, -1.7409),
+                    Complex::new(0.24873, 0.43081),
+                    Complex::new(0.24873, -0.43081),
+                    Complex::new(-0.49746, 0.),
+                    Complex::new(2.0102, 0.),
+                    Complex::new(-1.0051, 1.7409),
                 ],
             }),
         }

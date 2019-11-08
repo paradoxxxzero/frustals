@@ -14,7 +14,9 @@ const fractalLabels = {
   Newton2: "Newton z³ - 2z + 2",
   Newton3: "Newton z⁶ + z³ - 1",
   Newton4: "Newton z⁵ - 2",
-  Newton5: "Newton z³ - 1 + 1/z"
+  Newton5: "Newton z³ - 1 + 1/z",
+  Newton6: "Newton z⁹ - 1",
+  Newton7: "Newton 1/z⁶ + 8 / z³ - 1"
 };
 
 const jsOptions = {
